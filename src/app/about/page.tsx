@@ -1,3 +1,5 @@
+import { CONTACT, LISTING_FEE_SATS } from "@/lib/types";
+
 export default function AboutPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 prose prose-invert">
@@ -15,48 +17,69 @@ export default function AboutPage() {
       <p className="text-zinc-400">
         Donations never enter a platform wallet. The moment you decide an idea is
         worth sponsoring, you send BCH straight to the creator&apos;s address.
-        The platform only lists the idea after a small on-chain fee is paid to an
-        address controlled by the operators (or a burn address, if you prefer).
-        No KYC, no accounts, no intermediate balances.
+        The platform only lists the idea after a small on-chain fee is paid and
+        an admin has approved the campaign. No KYC, no intermediate balances.
+      </p>
+
+      <h2 className="text-xl font-semibold text-emerald-400">
+        Approval after on-chain proof
+      </h2>
+      <p className="text-zinc-400">
+        Paying the listing fee ({LISTING_FEE_SATS.toLocaleString()} sats) is the
+        proof of seriousness. Campaigns stay pending until approved so no one
+        loses money to a closed window or failed auto-check. If verification
+        fails, contact the operator with your txid.
       </p>
 
       <h2 className="text-xl font-semibold text-emerald-400">
         You only fund what you see fit
       </h2>
       <p className="text-zinc-400">
-        There is no algorithmic feed, no featured slots for sale, no social
-        graph. Ideas sit on a simple board. Serious builders and corporations
-        already run hackathons and RFPs to surface ideas; this is the same
-        principle, open to anyone, settled in cash that moves at the speed of
-        the network.
+        There is no algorithmic feed or paid featured slots. Ideas sit on a
+        simple board. Serious builders and corporations already run hackathons
+        to surface ideas; this is the open version, settled in cash that moves
+        at the speed of the network.
       </p>
 
       <h2 className="text-xl font-semibold text-emerald-400">
-        Why it should not look like GoFundMe
+        Track raised on the campaign address
       </h2>
       <p className="text-zinc-400">
-        Soft pastel cards, progress bars, and &ldquo;share to unlock&rdquo;
-        mechanics train people to treat money as a social game. Bitcoin Cash is
-        peer-to-peer electronic cash. The interface should reflect that:
-        transparent addresses, verifiable fees, minimal chrome. If an idea is
-        good, the description and the creator&apos;s reputation are enough.
+        Creators should use the address they publish for the campaign. The
+        platform reads total received on that address from a public explorer so
+        supporters can see progress without the platform ever holding funds.
       </p>
 
-      <h2 className="text-xl font-semibold text-emerald-400">
-        Open source, simple stack
-      </h2>
+      <h2 className="text-xl font-semibold text-emerald-400">Contact</h2>
       <p className="text-zinc-400">
-        Next.js on Vercel, GitHub for the code, public blockchain explorers for
-        verification. No proprietary payment processor. Change the platform
-        address, the fee amount, or the storage backend. Fork it, run your own
-        instance, or keep it as a pure public board.
+        For manual approval or questions after paying the listing fee:
       </p>
-
-      <p className="text-zinc-500 text-sm pt-8">
-        Built to stay true to the fundamentals. Replace the placeholder platform
-        address before going live. Host the repo on GitHub, deploy to Vercel,
-        and let the chain do the rest.
-      </p>
+      <ul className="text-zinc-400 list-disc list-inside space-y-1">
+        <li>
+          X:{" "}
+          <a
+            href={`https://x.com/${CONTACT.x}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @{CONTACT.x}
+          </a>
+        </li>
+        <li>
+          Email:{" "}
+          <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+        </li>
+        <li>
+          Telegram:{" "}
+          <a
+            href={`https://t.me/${CONTACT.telegram}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @{CONTACT.telegram}
+          </a>
+        </li>
+      </ul>
     </div>
   );
 }
