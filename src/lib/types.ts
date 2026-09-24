@@ -13,4 +13,4 @@ export interface Campaign {
 export const LISTING_FEE_SATS = 10000; // 0.0001 BCH — adjustable
 export const PLATFORM_ADDRESS =
   process.env.NEXT_PUBLIC_PLATFORM_ADDRESS ||
-  "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"; // placeholder — replace with real
+  "bitcoincash:qqptanljvhwjply7wt9kcn25qyzwys23yvey2tra66"; // placeholder — replace with real
