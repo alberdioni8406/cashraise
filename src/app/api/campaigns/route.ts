@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApprovedCampaigns, addCampaign } from "@/lib/store";
 import { verifyListingFee, isValidCashAddr } from "@/lib/bch";
-import { Campaign, LISTING_FEE_SATS } from "@/lib/types";
+import { Campaign } from "@/lib/types";
 
 export async function GET() {
-  const campaigns = getApprovedCampaigns();
+  const campaigns = await getApprovedCampaigns();
   return NextResponse.json({ campaigns });
 }
 
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       contactNote: contactNote?.trim() || undefined,
     };
 
-    const result = addCampaign(campaign);
+    const result = await addCampaign(campaign);
 
     if (result.reason === "already_pending") {
       return NextResponse.json(
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Could not save campaign (server storage issue). Contact admin with your txid for manual approval.",
+            "Could not save campaign. Set GITHUB_TOKEN in Vercel env (see README), or contact admin with your txid.",
         },
         { status: 500 }
       );
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         feeVerified,
         message: feeVerified
           ? "Fee verified on-chain. Campaign is pending admin approval."
-          : `Fee not fully verified yet (${check.error || "unknown"}). Campaign is pending — contact admin with your txid for manual approval.`,
+          : `Fee not fully verified yet (${check.error || "unknown"}). Campaign is pending — open /admin to approve, or contact admin with your txid.`,
       },
       { status: 201 }
     );
