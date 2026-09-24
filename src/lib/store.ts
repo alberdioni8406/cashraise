@@ -1,24 +1,19 @@
 /**
- * Campaign store — durable via GitHub when GITHUB_TOKEN is set.
+ * Campaign store — Upstash Redis (recommended) or in-memory fallback.
  *
- * Env (Vercel):
- *   GITHUB_TOKEN  = Personal Access Token with "repo" (or Contents read/write)
- *   GITHUB_REPO   = alberdioni8406/cashraise  (owner/name)
- *   GITHUB_BRANCH = main  (optional, default main)
+ * Vercel env:
+ *   UPSTASH_REDIS_REST_URL   = https://xxxxx.upstash.io
+ *   UPSTASH_REDIS_REST_TOKEN = Axxxxxxx
  *
- * Without token: falls back to in-memory + /tmp (not shared across instances).
+ * Free: https://console.upstash.com → Create Redis → REST API
  */
 
 import { Campaign } from "./types";
-import fs from "fs";
-import path from "path";
 
-const TMP_PATH = path.join("/tmp", "cashraise-campaigns.json");
-const DATA_FILE = "data/campaigns.json";
+const KEY = "cashraise:campaigns";
 
-const REPO = process.env.GITHUB_REPO || "alberdioni8406/cashraise";
-const BRANCH = process.env.GITHUB_BRANCH || "main";
-const TOKEN = process.env.GITHUB_TOKEN || "";
+const URL = (process.env.UPSTASH_REDIS_REST_URL || "").trim();
+const TOKEN = (process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
 
 type GlobalStore = { __cashraiseCampaigns?: Campaign[] };
 
@@ -26,101 +21,50 @@ function g(): GlobalStore {
   return globalThis as unknown as GlobalStore;
 }
 
-function useGitHub(): boolean {
-  return Boolean(TOKEN && REPO);
+function useUpstash(): boolean {
+  return Boolean(URL && TOKEN);
 }
 
-async function ghHeaders(): Promise<HeadersInit> {
-  return {
-    Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${TOKEN}`,
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
-}
-
-async function ghGetFile(): Promise<{
-  list: Campaign[];
-  sha: string | null;
-}> {
-  const url = `https://api.github.com/repos/\( {REPO}/contents/ \){DATA_FILE}?ref=${BRANCH}`;
-  const res = await fetch(url, {
-    headers: await ghHeaders(),
-    cache: "no-store",
-  });
-  if (res.status === 404) {
-    return { list: [], sha: null };
-  }
-  if (!res.ok) {
-    throw new Error(`GitHub read failed: ${res.status}`);
-  }
-  const data = await res.json();
-  const content = Buffer.from(data.content, "base64").toString("utf8");
-  const list = JSON.parse(content || "[]") as Campaign[];
-  return { list: Array.isArray(list) ? list : [], sha: data.sha as string };
-}
-
-async function ghPutFile(list: Campaign[], sha: string | null): Promise<void> {
-  const url = `https://api.github.com/repos/\( {REPO}/contents/ \){DATA_FILE}`;
-  const body: Record<string, string> = {
-    message: `chore: update campaigns (${list.length})`,
-    content: Buffer.from(JSON.stringify(list, null, 2)).toString("base64"),
-    branch: BRANCH,
-  };
-  if (sha) body.sha = sha;
-
-  const res = await fetch(url, {
-    method: "PUT",
+async function redis(command: (string | number)[]): Promise<any> {
+  const res = await fetch(URL, {
+    method: "POST",
     headers: {
-      ...(await ghHeaders()),
+      Authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(command),
+    cache: "no-store",
   });
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`GitHub write failed: ${res.status} ${err}`);
+    const text = await res.text();
+    throw new Error(`Upstash error: ${res.status} ${text}`);
   }
-}
-
-function readTmp(): Campaign[] {
-  try {
-    if (fs.existsSync(TMP_PATH)) {
-      const list = JSON.parse(fs.readFileSync(TMP_PATH, "utf8")) as Campaign[];
-      return Array.isArray(list) ? list : [];
-    }
-  } catch {
-    /* ignore */
-  }
-  return [];
-}
-
-function writeTmp(list: Campaign[]) {
-  try {
-    fs.writeFileSync(TMP_PATH, JSON.stringify(list, null, 2));
-  } catch {
-    /* ignore */
-  }
+  const data = await res.json();
+  return data.result;
 }
 
 async function loadAll(): Promise<Campaign[]> {
-  if (useGitHub()) {
-    const { list } = await ghGetFile();
-    g().__cashraiseCampaigns = list;
-    writeTmp(list);
-    return list;
+  if (useUpstash()) {
+    const raw = await redis(["GET", KEY]);
+    if (!raw) {
+      g().__cashraiseCampaigns = [];
+      return [];
+    }
+    const list = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const arr = Array.isArray(list) ? (list as Campaign[]) : [];
+    g().__cashraiseCampaigns = arr;
+    return arr;
   }
   if (!g().__cashraiseCampaigns) {
-    g().__cashraiseCampaigns = readTmp();
+    g().__cashraiseCampaigns = [];
   }
   return g().__cashraiseCampaigns!;
 }
 
 async function saveAll(list: Campaign[]): Promise<void> {
   g().__cashraiseCampaigns = list;
-  writeTmp(list);
-  if (useGitHub()) {
-    const { sha } = await ghGetFile();
-    await ghPutFile(list, sha);
+  if (useUpstash()) {
+    await redis(["SET", KEY, JSON.stringify(list)]);
   }
 }
 
@@ -151,8 +95,18 @@ export async function addCampaign(c: Campaign): Promise<{
   ok: boolean;
   campaign?: Campaign;
   reason?: "created" | "already_pending" | "already_approved" | "write_failed";
+  detail?: string;
 }> {
   try {
+    if (!useUpstash()) {
+      return {
+        ok: false,
+        reason: "write_failed",
+        detail:
+          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel, then redeploy.",
+      };
+    }
+
     const list = await loadAll();
 
     const byFee = c.feeTxid
@@ -182,9 +136,13 @@ export async function addCampaign(c: Campaign): Promise<{
 
     await saveAll([c, ...list]);
     return { ok: true, campaign: c, reason: "created" };
-  } catch (e) {
+  } catch (e: any) {
     console.error("addCampaign error", e);
-    return { ok: false, reason: "write_failed" };
+    return {
+      ok: false,
+      reason: "write_failed",
+      detail: e?.message || String(e),
+    };
   }
 }
 
