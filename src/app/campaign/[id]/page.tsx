@@ -6,6 +6,10 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+function formatBch(sats: number): string {
+  return (sats / 1e8).toFixed(4);
+}
+
 export default async function CampaignPage({
   params,
 }: {
@@ -23,6 +27,14 @@ export default async function CampaignPage({
 
   const raisedSats = await getAddressReceivedSats(campaign.creatorAddress);
   const bodyHtml = renderMarkdown(campaign.description);
+
+  const goal = campaign.goalSats;
+  const raised = raisedSats ?? 0;
+  const hasGoal = goal != null && goal > 0;
+  const pct = hasGoal
+    ? Math.min(100, Math.round((raised / goal!) * 1000) / 10)
+    : null;
+  const met = hasGoal && raised >= goal!;
 
   return (
     <article className="max-w-2xl mx-auto space-y-8">
@@ -66,29 +78,63 @@ export default async function CampaignPage({
         </p>
       </header>
 
+      <div className="border border-zinc-800 bg-zinc-900/60 rounded-xl p-5 space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <p className="text-xs text-zinc-500 uppercase tracking-wide">
+              Raised on-chain
+            </p>
+            <p className="text-2xl font-bold text-emerald-400">
+              {raisedSats != null ? `${formatBch(raised)} BCH` : "—"}
+            </p>
+          </div>
+          <div className="text-right">
+            {hasGoal ? (
+              <>
+                <p className="text-xs text-zinc-500 uppercase tracking-wide">
+                  Goal
+                </p>
+                <p className="text-lg font-semibold text-zinc-200">
+                  {formatBch(goal!)} BCH
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-zinc-500">Open-ended</p>
+            )}
+          </div>
+        </div>
+
+        {hasGoal && (
+          <div className="space-y-1.5">
+            <div className="h-2.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  met ? "bg-emerald-400" : "bg-emerald-500"
+                }`}
+                style={{ width: `${pct ?? 0}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-zinc-500">
+              <span>{met ? "Goal reached" : `${pct}% of goal`}</span>
+              {raisedSats != null && goal! > raised && (
+                <span>{formatBch(goal! - raised)} BCH to go</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <p className="text-xs text-zinc-500 leading-relaxed">
+          Counts <strong className="text-zinc-400">all</strong> funds ever
+          received on this address (explorer total). Creators should use a{" "}
+          <strong className="text-zinc-300">dedicated campaign address</strong>{" "}
+          and avoid sharing it for other payments while the campaign is live.
+        </p>
+      </div>
+
       <div
         className="text-zinc-300 max-w-none"
         dangerouslySetInnerHTML={{ __html: bodyHtml }}
       />
-
-      <div className="flex flex-wrap gap-4 text-sm">
-        {campaign.goalSats != null && (
-          <p className="text-zinc-400">
-            Goal:{" "}
-            <span className="text-white font-medium">
-              {(campaign.goalSats / 1e8).toFixed(4)} BCH
-            </span>
-          </p>
-        )}
-        {raisedSats != null && (
-          <p className="text-zinc-400">
-            Raised (on this address):{" "}
-            <span className="text-emerald-400 font-medium">
-              {(raisedSats / 1e8).toFixed(4)} BCH
-            </span>
-          </p>
-        )}
-      </div>
 
       <div className="border border-emerald-500/40 bg-emerald-950/10 rounded-2xl p-6 space-y-5">
         <h2 className="text-lg font-semibold text-emerald-400">
@@ -96,8 +142,7 @@ export default async function CampaignPage({
         </h2>
         <p className="text-sm text-zinc-400">
           Scan or copy. Funds go <strong>straight</strong> to the creator.
-          This platform never touches the money. Use the address below so the
-          raised total can be tracked on-chain.
+          This platform never touches the money.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 items-center">
@@ -124,12 +169,12 @@ export default async function CampaignPage({
             </a>
           </div>
         </div>
-      </div>
 
-      <p className="text-xs text-zinc-600 text-center">
-        Always verify the address matches what the creator published. Self-custody
-        means you are responsible for the transaction.
-      </p>
+        <p className="text-xs text-zinc-600">
+          Always verify the address. Self-custody means you are responsible for
+          the transaction.
+        </p>
+      </div>
     </article>
   );
 }
