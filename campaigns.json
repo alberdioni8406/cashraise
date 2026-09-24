@@ -1,0 +1,21 @@
+[
+  {
+    "id": "seed-open-source-bch-tooling",
+    "title": "Open-source BCH developer tooling",
+    "description": "Build better libraries, explorers, and wallet SDKs for Bitcoin Cash. Funds go straight to the maintainer address. No middleman, no platform cut on donations.",
+    "creatorAddress": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
+    "goalSats": 500000000,
+    "category": "Infrastructure",
+    "createdAt": "2026-09-24T10:00:00.000Z",
+    "feeTxid": "seed"
+  },
+  {
+    "id": "seed-local-community-meetup",
+    "title": "BCH meetup series in emerging markets",
+    "description": "Organize physical meetups, workshops and local merchant onboarding. Pure peer-to-peer funding — you decide if the idea is worth sponsoring.",
+    "creatorAddress": "bitcoincash:qp3sn6vlwz28ntmf3wmyra7jqttfx7z6zgtkygjhc7",
+    "category": "Community",
+    "createdAt": "2026-09-24T10:00:00.000Z",
+    "feeTxid": "seed"
+  }
+]
