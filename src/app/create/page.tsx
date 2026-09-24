@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   LISTING_FEE_SATS,
   PLATFORM_ADDRESS,
+  CONTACT,
 } from "@/lib/types";
 import { qrImageUrl, buildPaymentUri } from "@/lib/bch";
 
@@ -15,11 +16,13 @@ export default function CreatePage() {
   const [creatorAddress, setCreatorAddress] = useState("");
   const [goalBch, setGoalBch] = useState("");
   const [category, setCategory] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [feeTxid, setFeeTxid] = useState("");
-  const [status, setStatus] = useState<"idle" | "checking" | "error" | "success">(
-    "idle"
-  );
+  const [status, setStatus] = useState<
+    "idle" | "checking" | "error" | "success"
+  >("idle");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const feeUri = buildPaymentUri(
     PLATFORM_ADDRESS,
@@ -31,6 +34,7 @@ export default function CreatePage() {
     e.preventDefault();
     setStatus("checking");
     setError("");
+    setMessage("");
 
     try {
       const res = await fetch("/api/campaigns", {
@@ -42,17 +46,21 @@ export default function CreatePage() {
           creatorAddress,
           goalSats: goalBch ? Math.round(parseFloat(goalBch) * 1e8) : undefined,
           category: category || undefined,
+          imageUrl: imageUrl || undefined,
           feeTxid: feeTxid.trim(),
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Failed to list");
+        setError(data.error || "Failed to submit");
         setStatus("error");
         return;
       }
       setStatus("success");
-      setTimeout(() => router.push(`/campaign/${data.campaign.id}`), 1200);
+      setMessage(
+        data.message ||
+          "Submitted. Pending admin approval after on-chain fee verification."
+      );
     } catch (err: any) {
       setError(err.message || "Network error");
       setStatus("error");
@@ -64,21 +72,22 @@ export default function CreatePage() {
       <div>
         <h1 className="text-3xl font-bold">List an idea</h1>
         <p className="text-zinc-400 mt-2">
-          Pay a one-time on-chain fee. Your campaign goes live. Donations flow
-          directly to the address you provide — this platform never holds funds.
+          Pay the on-chain listing fee, then submit. Campaigns go live only after
+          admin approval. Donations always go straight to your address — this
+          platform never holds funds.
         </p>
       </div>
 
-      {/* Fee payment box */}
       <div className="border border-emerald-500/30 bg-emerald-950/20 rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold text-emerald-400">
-          1. Pay the listing fee
-        </h2>
+        <h2 className="font-semibold text-emerald-400">1. Pay the listing fee</h2>
         <p className="text-sm text-zinc-400">
-          Send exactly <strong>{LISTING_FEE_SATS.toLocaleString()} sats</strong>{" "}
-          (or more) to the platform address. Then paste the transaction ID below.
+          Send at least{" "}
+          <strong>{LISTING_FEE_SATS.toLocaleString()} sats</strong> (
+          {(LISTING_FEE_SATS / 1e8).toFixed(8)} BCH) to the platform address.
+          Then paste the transaction ID below.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrImageUrl(feeUri)}
             alt="Fee QR"
@@ -146,7 +155,24 @@ export default function CreatePage() {
             placeholder="bitcoincash:q..."
           />
           <p className="text-xs text-zinc-500 mt-1">
-            Donations go here. Never share private keys.
+            Use this address for the campaign so raised amount can be tracked
+            on-chain. Donations go here. Never share private keys.
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm text-zinc-400 mb-1">
+            Image URL (optional, one photo)
+          </label>
+          <input
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-500 text-sm"
+            placeholder="https://…"
+          />
+          <p className="text-xs text-zinc-500 mt-1">
+            Direct link to an image (e.g. from Imgur, GitHub raw, or your site).
           </p>
         </div>
 
@@ -199,8 +225,16 @@ export default function CreatePage() {
         )}
 
         {status === "success" && (
-          <div className="text-emerald-400 text-sm bg-emerald-950/30 border border-emerald-900 rounded-lg px-4 py-3">
-            Listed! Redirecting…
+          <div className="text-emerald-400 text-sm bg-emerald-950/30 border border-emerald-900 rounded-lg px-4 py-3 space-y-2">
+            <p className="font-medium">Submitted — pending approval</p>
+            <p>{message}</p>
+            <p className="text-zinc-400 text-xs pt-2">
+              If the fee did not verify automatically or you need help, contact
+              with your txid:
+              <br />
+              X: @{CONTACT.x} · Email: {CONTACT.email} · Telegram: @
+              {CONTACT.telegram}
+            </p>
           </div>
         )}
 
@@ -209,9 +243,46 @@ export default function CreatePage() {
           disabled={status === "checking" || status === "success"}
           className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold py-3 rounded-lg transition"
         >
-          {status === "checking" ? "Verifying on-chain…" : "Publish idea"}
+          {status === "checking" ? "Verifying on-chain…" : "Submit for approval"}
         </button>
       </form>
+
+      <div className="border border-zinc-800 rounded-xl p-5 text-sm text-zinc-400 space-y-2">
+        <p className="font-medium text-zinc-300">Need manual approval?</p>
+        <p>
+          If payment verification fails or the window closes, send your txid to:
+        </p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>
+            X:{" "}
+            <a
+              href={`https://x.com/${CONTACT.x}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400"
+            >
+              @{CONTACT.x}
+            </a>
+          </li>
+          <li>
+            Email:{" "}
+            <a href={`mailto:${CONTACT.email}`} className="text-emerald-400">
+              {CONTACT.email}
+            </a>
+          </li>
+          <li>
+            Telegram:{" "}
+            <a
+              href={`https://t.me/${CONTACT.telegram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400"
+            >
+              @{CONTACT.telegram}
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }
