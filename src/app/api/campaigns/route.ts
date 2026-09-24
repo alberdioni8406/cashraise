@@ -40,9 +40,14 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (!feeTxid || !/^[a-fA-F0-9]{64}$/.test(feeTxid)) {
+
+    const tx = typeof feeTxid === "string" ? feeTxid.trim() : "";
+    if (!tx || !/^[a-fA-F0-9]{64}$/.test(tx)) {
       return NextResponse.json(
-        { error: "Valid listing fee txid required" },
+        {
+          error:
+            "Valid listing fee txid required (full 64-character hex from your wallet)",
+        },
         { status: 400 }
       );
     }
@@ -53,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const check = await verifyListingFee(feeTxid);
+    const check = await verifyListingFee(tx);
     const feeVerified = check.valid;
 
     const id =
@@ -63,7 +68,7 @@ export async function POST(req: NextRequest) {
         .replace(/(^-|-$)/g, "")
         .slice(0, 48) +
       "-" +
-      feeTxid.slice(0, 8);
+      tx.slice(0, 8);
 
     const campaign: Campaign = {
       id,
@@ -74,24 +79,52 @@ export async function POST(req: NextRequest) {
       category: category?.trim() || undefined,
       imageUrl: imageUrl?.trim() || undefined,
       createdAt: new Date().toISOString(),
-      feeTxid,
+      feeTxid: tx,
       status: "pending",
       feeVerified,
       contactNote: contactNote?.trim() || undefined,
     };
 
-    const ok = addCampaign(campaign);
-    if (!ok) {
+    const result = addCampaign(campaign);
+
+    if (result.reason === "already_pending") {
       return NextResponse.json(
-        { error: "Campaign already submitted (same id or fee tx)" },
+        {
+          success: true,
+          campaign: result.campaign,
+          feeVerified: result.campaign?.feeVerified ?? feeVerified,
+          message:
+            "This fee tx was already used. Your campaign is pending admin approval — open /admin to approve it.",
+        },
+        { status: 200 }
+      );
+    }
+
+    if (result.reason === "already_approved") {
+      return NextResponse.json(
+        {
+          error:
+            "A campaign with this fee transaction is already approved and live.",
+          campaign: result.campaign,
+        },
         { status: 409 }
+      );
+    }
+
+    if (!result.ok || result.reason === "write_failed") {
+      return NextResponse.json(
+        {
+          error:
+            "Could not save campaign (server storage issue). Contact admin with your txid for manual approval.",
+        },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
       {
         success: true,
-        campaign,
+        campaign: result.campaign,
         feeVerified,
         message: feeVerified
           ? "Fee verified on-chain. Campaign is pending admin approval."
