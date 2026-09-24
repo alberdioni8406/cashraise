@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCampaigns, addCampaign } from "@/lib/store";
+import { getApprovedCampaigns, addCampaign } from "@/lib/store";
 import { verifyListingFee, isValidCashAddr } from "@/lib/bch";
 import { Campaign, LISTING_FEE_SATS } from "@/lib/types";
 
 export async function GET() {
-  const campaigns = getCampaigns();
+  const campaigns = getApprovedCampaigns();
   return NextResponse.json({ campaigns });
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, description, creatorAddress, goalSats, category, feeTxid } =
-      body;
+    const {
+      title,
+      description,
+      creatorAddress,
+      goalSats,
+      category,
+      feeTxid,
+      imageUrl,
+      contactNote,
+    } = body;
 
     if (!title || typeof title !== "string" || title.trim().length < 5) {
       return NextResponse.json(
@@ -38,19 +46,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // The core: non-custodial fee verification on-chain
-    const check = await verifyListingFee(feeTxid);
-    if (!check.valid) {
+    if (imageUrl && typeof imageUrl === "string" && imageUrl.length > 500) {
       return NextResponse.json(
-        {
-          error: check.error || "Listing fee not verified on-chain",
-          paid: check.amountSats,
-          required: LISTING_FEE_SATS,
-        },
-        { status: 402 }
+        { error: "Image URL too long" },
+        { status: 400 }
       );
     }
+
+    const check = await verifyListingFee(feeTxid);
+    const feeVerified = check.valid;
 
     const id =
       title
@@ -68,19 +72,33 @@ export async function POST(req: NextRequest) {
       creatorAddress: creatorAddress.trim(),
       goalSats: goalSats ? Number(goalSats) : undefined,
       category: category?.trim() || undefined,
+      imageUrl: imageUrl?.trim() || undefined,
       createdAt: new Date().toISOString(),
       feeTxid,
+      status: "pending",
+      feeVerified,
+      contactNote: contactNote?.trim() || undefined,
     };
 
     const ok = addCampaign(campaign);
     if (!ok) {
       return NextResponse.json(
-        { error: "Campaign already listed (same id or fee tx)" },
+        { error: "Campaign already submitted (same id or fee tx)" },
         { status: 409 }
       );
     }
 
-    return NextResponse.json({ success: true, campaign }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        campaign,
+        feeVerified,
+        message: feeVerified
+          ? "Fee verified on-chain. Campaign is pending admin approval."
+          : `Fee not fully verified yet (${check.error || "unknown"}). Campaign is pending — contact admin with your txid for manual approval.`,
+      },
+      { status: 201 }
+    );
   } catch (e: any) {
     return NextResponse.json(
       { error: e?.message || "Server error" },
