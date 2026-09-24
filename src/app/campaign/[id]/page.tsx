@@ -11,7 +11,7 @@ export default async function CampaignPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const campaign = getCampaign(id);
+  const campaign = await getCampaign(id);
   if (!campaign || campaign.status !== "approved") notFound();
 
   const uri = buildPaymentUri(
