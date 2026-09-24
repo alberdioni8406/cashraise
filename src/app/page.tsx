@@ -4,8 +4,8 @@ import { LISTING_FEE_SATS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const campaigns = getApprovedCampaigns();
+export default async function Home() {
+  const campaigns = await getApprovedCampaigns();
 
   return (
     <div className="space-y-10">
