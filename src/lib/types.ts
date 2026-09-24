@@ -1,16 +1,33 @@
+export type CampaignStatus = "pending" | "approved" | "rejected";
+
 export interface Campaign {
   id: string;
   title: string;
   description: string;
-  creatorAddress: string; // CashAddr format
-  goalSats?: number; // optional goal in satoshis
+  creatorAddress: string; // CashAddr — donations go here; use this address to track raised amount
+  goalSats?: number;
   category?: string;
-  createdAt: string; // ISO
-  feeTxid: string; // the listing fee transaction
-  raisedSats?: number; // optional, for display if tracked
+  imageUrl?: string; // optional single photo URL
+  createdAt: string;
+  feeTxid: string;
+  status: CampaignStatus;
+  feeVerified: boolean; // true when on-chain fee check succeeded
+  approvedAt?: string;
+  contactNote?: string;
 }
 
-export const LISTING_FEE_SATS = 10000; // 0.0001 BCH — adjustable
+/** Listing fee — raised to reduce spam. Override with env if needed. */
+export const LISTING_FEE_SATS = 100_000; // 0.001 BCH
+
 export const PLATFORM_ADDRESS =
   process.env.NEXT_PUBLIC_PLATFORM_ADDRESS ||
-  "bitcoincash:qqptanljvhwjply7wt9kcn25qyzwys23yvey2tra66"; // placeholder — replace with real
+  "bitcoincash:qqptanljvhwjply7wt9kcn25qyzwys23yvey2tra66";
+
+/** Set ADMIN_SECRET in Vercel environment variables for production */
+export const ADMIN_SECRET = process.env.ADMIN_SECRET || "cashraise-admin-change-me";
+
+export const CONTACT = {
+  x: "alberdioni8406_",
+  email: "alberdioni8406@proton.me",
+  telegram: "alberdioni8406",
+};
