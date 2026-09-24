@@ -46,18 +46,57 @@ export function getCampaign(id: string): Campaign | undefined {
   return getCampaigns().find((c) => c.id === id);
 }
 
-export function addCampaign(c: Campaign): boolean {
+export function findByFeeTxid(feeTxid: string): Campaign | undefined {
+  if (!feeTxid) return undefined;
+  return getCampaigns().find((c) => c.feeTxid === feeTxid);
+}
+
+/**
+ * Add a campaign.
+ * Same feeTxid + pending → success (already submitted).
+ * Same feeTxid + approved → block.
+ * Same feeTxid + rejected → allow re-submit.
+ */
+export function addCampaign(c: Campaign): {
+  ok: boolean;
+  campaign?: Campaign;
+  reason?: "created" | "already_pending" | "already_approved" | "write_failed";
+} {
   try {
     ensureFile();
     const list = getCampaigns();
-    if (list.some((x) => x.id === c.id || (c.feeTxid && x.feeTxid === c.feeTxid))) {
-      return false;
+
+    const byFee = c.feeTxid
+      ? list.find((x) => x.feeTxid === c.feeTxid)
+      : undefined;
+
+    if (byFee) {
+      if (byFee.status === "approved") {
+        return { ok: false, campaign: byFee, reason: "already_approved" };
+      }
+      if (byFee.status === "pending") {
+        return { ok: true, campaign: byFee, reason: "already_pending" };
+      }
+      // rejected → allow re-submit
+      const without = list.filter((x) => x.feeTxid !== c.feeTxid);
+      without.unshift(c);
+      fs.writeFileSync(DATA_PATH, JSON.stringify(without, null, 2));
+      return { ok: true, campaign: c, reason: "created" };
     }
+
+    if (list.some((x) => x.id === c.id)) {
+      return {
+        ok: false,
+        campaign: list.find((x) => x.id === c.id),
+        reason: "already_pending",
+      };
+    }
+
     list.unshift(c);
     fs.writeFileSync(DATA_PATH, JSON.stringify(list, null, 2));
-    return true;
+    return { ok: true, campaign: c, reason: "created" };
   } catch {
-    return false;
+    return { ok: false, reason: "write_failed" };
   }
 }
 
