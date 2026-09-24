@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (imageUrl && typeof imageUrl === "string" && imageUrl.length > 500) {
+    if (imageUrl && typeof imageUrl === "string" && imageUrl.length > 200000) {
       return NextResponse.json(
-        { error: "Image URL too long" },
+        { error: "Image too large (max ~150KB after resize). Use a URL or a smaller photo." },
         { status: 400 }
       );
     }
@@ -115,7 +115,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Could not save campaign. Set GITHUB_TOKEN in Vercel env (see README), or contact admin with your txid.",
+            result.detail ||
+            "Could not save campaign. Set GITHUB_TOKEN (classic PAT, scope repo) and GITHUB_REPO=alberdioni8406/cashraise, then redeploy.",
         },
         { status: 500 }
       );
