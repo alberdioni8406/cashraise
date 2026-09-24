@@ -7,22 +7,23 @@ import { LISTING_FEE_SATS, PLATFORM_ADDRESS } from "./types";
 
 const EXPLORER = "https://bchexplorer.cash/api";
 
-/** Basic CashAddr validation (prefix + length heuristic) */
+/** Basic CashAddr validation */
 export function isValidCashAddr(addr: string): boolean {
   if (!addr || typeof addr !== "string") return false;
   const a = addr.trim().toLowerCase();
   return (
-    (a.startsWith("bitcoincash:") || a.startsWith("bchtest:") || a.startsWith("bchreg:")) &&
+    (a.startsWith("bitcoincash:") ||
+      a.startsWith("bchtest:") ||
+      a.startsWith("bchreg:")) &&
     a.length > 20 &&
     a.length < 120 &&
     /^[a-z0-9:]+$/.test(a)
   );
 }
 
-/** Fetch raw transaction from public explorer */
 export async function getTransaction(txid: string): Promise<any | null> {
   try {
-    const res = await fetch(`${EXPLORER}/tx/${txid}`, {
+    const res = await fetch(`\( {EXPLORER}/tx/ \){txid}`, {
       next: { revalidate: 30 },
     });
     if (!res.ok) return null;
@@ -33,8 +34,7 @@ export async function getTransaction(txid: string): Promise<any | null> {
 }
 
 /**
- * Verify that a transaction paid at least LISTING_FEE_SATS to PLATFORM_ADDRESS.
- * This is the only gate for listing — pure non-custodial fee.
+ * Verify listing fee paid to PLATFORM_ADDRESS.
  */
 export async function verifyListingFee(txid: string): Promise<{
   valid: boolean;
@@ -47,10 +47,12 @@ export async function verifyListingFee(txid: string): Promise<{
 
   const tx = await getTransaction(txid);
   if (!tx) {
-    return { valid: false, error: "Transaction not found (or explorer unavailable)" };
+    return {
+      valid: false,
+      error: "Transaction not found (or explorer unavailable)",
+    };
   }
 
-  // Look at outputs for payment to platform
   let paid = 0;
   const platform = PLATFORM_ADDRESS.toLowerCase().replace("bitcoincash:", "");
 
@@ -61,9 +63,7 @@ export async function verifyListingFee(txid: string): Promise<{
       "";
     const clean = addr.replace("bitcoincash:", "");
     if (clean === platform || addr === PLATFORM_ADDRESS.toLowerCase()) {
-      // value is usually in sats for this explorer
       const val = Number(vout.value ?? vout.valueSat ?? 0);
-      // some explorers return BCH float; normalize
       paid += val > 1 ? val : Math.round(val * 1e8);
     }
   }
@@ -79,7 +79,30 @@ export async function verifyListingFee(txid: string): Promise<{
   };
 }
 
-/** Build BIP21 payment URI for donations */
+/**
+ * Total received (funded) for a campaign address in satoshis.
+ */
+export async function getAddressReceivedSats(
+  address: string
+): Promise<number | null> {
+  try {
+    const res = await fetch(`\( {EXPLORER}/address/ \){encodeURIComponent(address)}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const funded =
+      data?.chain_stats?.funded_txo_sum ??
+      data?.totalReceived ??
+      null;
+    if (funded == null) return null;
+    const n = Number(funded);
+    return n > 1 ? n : Math.round(n * 1e8);
+  } catch {
+    return null;
+  }
+}
+
 export function buildPaymentUri(
   address: string,
   amountSats?: number,
@@ -97,7 +120,6 @@ export function buildPaymentUri(
   return uri;
 }
 
-/** QR image URL via public service (no local dep needed) */
 export function qrImageUrl(data: string, size = 220): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=\( {size}x \){size}&data=${encodeURIComponent(data)}`;
 }
