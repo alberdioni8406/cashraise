@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
   if (!isAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const all = getCampaigns();
-  const pending = getPendingCampaigns();
+  const all = await getCampaigns();
+  const pending = await getPendingCampaigns();
   return NextResponse.json({ campaigns: all, pending });
 }
 
@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { id, action } = body; // action: "approve" | "reject" | "delete"
+    const { id, action } = body;
     if (!id || !action) {
       return NextResponse.json(
         { error: "id and action required" },
@@ -39,12 +39,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "delete") {
-      const ok = deleteCampaign(id);
+      const ok = await deleteCampaign(id);
       return NextResponse.json({ success: ok });
     }
 
     if (action === "approve") {
-      const updated = updateCampaign(id, {
+      const updated = await updateCampaign(id, {
         status: "approved",
         approvedAt: new Date().toISOString(),
       });
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "reject") {
-      const updated = updateCampaign(id, { status: "rejected" });
+      const updated = await updateCampaign(id, { status: "rejected" });
       if (!updated) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
