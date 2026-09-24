@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getCampaign } from "@/lib/store";
 import { buildPaymentUri, qrImageUrl, getAddressReceivedSats } from "@/lib/bch";
+import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function CampaignPage({
   );
 
   const raisedSats = await getAddressReceivedSats(campaign.creatorAddress);
+  const bodyHtml = renderMarkdown(campaign.description);
 
   return (
     <article className="max-w-2xl mx-auto space-y-8">
@@ -64,11 +66,10 @@ export default async function CampaignPage({
         </p>
       </header>
 
-      <div className="prose prose-invert max-w-none">
-        <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed">
-          {campaign.description}
-        </p>
-      </div>
+      <div
+        className="text-zinc-300 max-w-none"
+        dangerouslySetInnerHTML={{ __html: bodyHtml }}
+      />
 
       <div className="flex flex-wrap gap-4 text-sm">
         {campaign.goalSats != null && (
