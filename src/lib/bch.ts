@@ -24,7 +24,7 @@ export function isValidCashAddr(addr: string): boolean {
 export async function getTransaction(txid: string): Promise<any | null> {
   try {
     const res = await fetch(`\( {EXPLORER}/tx/ \){txid}`, {
-      next: { revalidate: 30 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return await res.json();
@@ -86,15 +86,14 @@ export async function getAddressReceivedSats(
   address: string
 ): Promise<number | null> {
   try {
-    const res = await fetch(`\( {EXPLORER}/address/ \){encodeURIComponent(address)}`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      `\( {EXPLORER}/address/ \){encodeURIComponent(address)}`,
+      { cache: "no-store" }
+    );
     if (!res.ok) return null;
     const data = await res.json();
     const funded =
-      data?.chain_stats?.funded_txo_sum ??
-      data?.totalReceived ??
-      null;
+      data?.chain_stats?.funded_txo_sum ?? data?.totalReceived ?? null;
     if (funded == null) return null;
     const n = Number(funded);
     return n > 1 ? n : Math.round(n * 1e8);
