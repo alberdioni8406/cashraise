@@ -17,7 +17,7 @@ export interface Campaign {
 }
 
 /** Listing fee — raised to reduce spam. Override with env if needed. */
-export const LISTING_FEE_SATS = 100_000; // 0.001 BCH
+export const LISTING_FEE_SATS = 1_000_000; // 0.01 BCH
 
 export const PLATFORM_ADDRESS =
   process.env.NEXT_PUBLIC_PLATFORM_ADDRESS ||
