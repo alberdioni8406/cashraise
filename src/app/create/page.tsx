@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   LISTING_FEE_SATS,
   PLATFORM_ADDRESS,
@@ -8,7 +9,7 @@ import {
 } from "@/lib/types";
 import { qrImageUrl, buildPaymentUri } from "@/lib/bch";
 
-const MAX_IMAGE_CHARS = 180_000; // \~135KB base64 budget
+const MAX_IMAGE_CHARS = 180_000; // ~135KB base64 budget
 
 async function fileToResizedDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -50,7 +51,8 @@ async function fileToResizedDataUrl(file: File): Promise<string> {
   });
 }
 
-export default function CreatePage() {
+function CreateForm() {
+  const searchParams = useSearchParams();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [creatorAddress, setCreatorAddress] = useState("");
@@ -67,6 +69,11 @@ export default function CreatePage() {
   const [uploading, setUploading] = useState(false);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const t = searchParams.get("title");
+    if (t) setTitle(t);
+  }, [searchParams]);
 
   const feeUri = buildPaymentUri(
     PLATFORM_ADDRESS,
@@ -92,8 +99,7 @@ export default function CreatePage() {
     setDescription(next);
     requestAnimationFrame(() => {
       el.focus();
-      const pos =
-        start + before.length + (selected || "text").length + after.length;
+      const pos = start + before.length + (selected || "text").length + after.length;
       el.setSelectionRange(pos, pos);
     });
   }
@@ -192,10 +198,39 @@ export default function CreatePage() {
               href={feeUri}
               className="inline-block bg-emerald-500 text-black font-medium px-3 py-1.5 rounded"
             >
-              Open in wallet
+              Open in wallet (BIP21)
             </a>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <a
+            href={feeUri}
+            className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-emerald-500/50"
+          >
+            Cashonize / any BIP21 wallet
+          </a>
+          <a
+            href="https://paytaca.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-emerald-500/50"
+          >
+            Paytaca
+          </a>
+          <a
+            href="https://cashonize.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 rounded-lg border border-zinc-600 text-zinc-300 hover:border-emerald-500/50"
+          >
+            Cashonize
+          </a>
+        </div>
+        <p className="text-xs text-zinc-500">
+          Pay <strong className="text-zinc-300">0.01 BCH</strong>, then paste the
+          full 64-character txid below. If wallet connect fails, the manual txid
+          path still works — admin can approve after you paid.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -222,27 +257,15 @@ export default function CreatePage() {
             {[
               { label: "B", title: "Bold", fn: () => insertMarkdown("**", "**") },
               { label: "I", title: "Italic", fn: () => insertMarkdown("*", "*") },
-              {
-                label: "H2",
-                title: "Heading",
-                fn: () => insertMarkdown("\n## ", ""),
-              },
+              { label: "H2", title: "Heading", fn: () => insertMarkdown("\n## ", "") },
               { label: "•", title: "List", fn: () => insertMarkdown("\n- ", "") },
-              {
-                label: "1.",
-                title: "Numbered",
-                fn: () => insertMarkdown("\n1. ", ""),
-              },
+              { label: "1.", title: "Numbered", fn: () => insertMarkdown("\n1. ", "") },
               {
                 label: "Link",
                 title: "Link",
                 fn: () => insertMarkdown("[", "](https://)"),
               },
-              {
-                label: "`code`",
-                title: "Code",
-                fn: () => insertMarkdown("`", "`"),
-              },
+              { label: "`code`", title: "Code", fn: () => insertMarkdown("`", "`") },
             ].map((b) => (
               <button
                 key={b.label}
@@ -284,8 +307,10 @@ export default function CreatePage() {
             placeholder="bitcoincash:q..."
           />
           <p className="text-xs text-zinc-500 mt-1">
-            Use this address for the campaign so raised amount can be tracked
-            on-chain. Donations go here. Never share private keys.
+            Use a <strong className="text-zinc-300">dedicated campaign address</strong> so
+            raised totals stay accurate. Any payment to this address counts toward
+            the counter — avoid sharing it for other uses while the campaign is live.
+            Never share private keys.
           </p>
         </div>
 
@@ -463,5 +488,13 @@ export default function CreatePage() {
         </ul>
       </div>
     </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense fallback={<div className="text-zinc-500">Loading…</div>}>
+      <CreateForm />
+    </Suspense>
   );
 }
