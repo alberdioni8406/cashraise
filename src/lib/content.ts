@@ -97,55 +97,70 @@ export const NEWS: NewsItem[] = [
     tags: ["campaigns", "builders"],
   },
 ];
-
-/** Idea sparks — users can turn these into campaigns */
+/** Idea sparks — real-world BCH campaigns people actually fund */
 export const IDEA_SPARKS: IdeaSpark[] = [
   {
     id: "i1",
-    title: "BCH merchant sticker pack",
+    title: "Neighborhood BCH onboarding week",
     blurb:
-      "Design printable “Pay with BCH” stickers for local shops. Raise for printing + a small outreach kit.",
-    tags: ["merchant", "adoption"],
-    seedTitle: "BCH merchant sticker pack",
+      "Run a 7-day local push: QR flyers, one short workshop, and help 20 neighbors install a wallet and receive their first sats. Budget for prints, venue hour, and a small starter sat pool.",
+    tags: ["onboarding", "local", "adoption"],
+    seedTitle: "Neighborhood BCH onboarding week",
   },
   {
     id: "i2",
-    title: "Open-source CashTokens demo app",
+    title: "One-tap BCH pay link for small shops",
     blurb:
-      "Ship a minimal public demo that shows mint / transfer / burn so newcomers can learn by clicking.",
-    tags: ["cashtokens", "dev"],
-    seedTitle: "Open-source CashTokens demo",
+      "Build a dead-simple page: shop name, amount, BIP21 button + QR. No account. Shopkeepers share one link on WhatsApp. Raise for hosting, design, and 5 pilot stores.",
+    tags: ["payments", "merchants", "tools"],
+    seedTitle: "One-tap BCH pay link for small shops",
   },
   {
     id: "i3",
-    title: "Community translation drive",
+    title: "Monthly BCH cash meetup (3 months)",
     blurb:
-      "Translate a BCH wallet or docs into a language your region needs. Budget for editors and review.",
-    tags: ["community", "docs"],
-    seedTitle: "BCH docs translation drive",
+      "Three meetups: learn a wallet, practice a live payment, share a success story. Venue + snacks + printed one-pagers. Publish photos and a short recap after each night.",
+    tags: ["meetup", "community", "education"],
+    seedTitle: "Monthly BCH cash meetup series",
   },
   {
     id: "i4",
-    title: "Local BCH meetup series",
+    title: "Street-market “Pay with BCH” kit",
     blurb:
-      "Three small meetups: venue, snacks, a short talk on non-custodial fundraising. Publish notes after each.",
-    tags: ["meetup", "education"],
-    seedTitle: "Local BCH meetup series",
+      "Laminated signs, table tents, and a 2-minute video for market vendors. Kit + train 10 stalls. Measure how many sales close in BCH the first weekend.",
+    tags: ["merchants", "markets", "adoption"],
+    seedTitle: "Street-market Pay with BCH kit",
   },
   {
     id: "i5",
-    title: "Paybutton + tip jar for creators",
+    title: "Family remittance demo day",
     blurb:
-      "Template site for writers/podcasters: embed BCH tips, track on-chain, no middleman.",
-    tags: ["creators", "tools"],
-    seedTitle: "BCH tip jar template for creators",
+      "Show families how to send value home in BCH in under 5 minutes. Projector, two phones, printed steps in local language. Goal: 15 successful first sends the same day.",
+    tags: ["remittance", "education", "real-world"],
+    seedTitle: "Family BCH remittance demo day",
   },
   {
     id: "i6",
-    title: "Explorer UX research",
+    title: "School / club tip-jar for events",
     blurb:
-      "Interview 10 non-technical users on bchexplorer-style sites; publish findings and mockups.",
-    tags: ["ux", "research"],
-    seedTitle: "BCH explorer UX research",
+      "Set up a non-custodial tip address + poster for a sports club, open mic, or campus event. Track raised on-chain. Transparent, no middleman, kids see money move live.",
+    tags: ["events", "youth", "tips"],
+    seedTitle: "School event BCH tip jar",
+  },
+  {
+    id: "i7",
+    title: "CashTokens loyalty stamp for a café",
+    blurb:
+      "Pilot: buy 5 coffees → get a token stamp → 6th free. Simple mint/burn flow the barista can explain. Raise for the tiny app + stickers on the counter.",
+    tags: ["cashtokens", "merchants", "loyalty"],
+    seedTitle: "Café CashTokens loyalty stamp pilot",
+  },
+  {
+    id: "i8",
+    title: "BCH payment cheat-sheet (print + PDF)",
+    blurb:
+      "One page: install wallet → backup → receive → send. Local language. 500 prints for shops, churches, co-ops. PDF free online so anyone can reprint.",
+    tags: ["education", "print", "onboarding"],
+    seedTitle: "BCH payment cheat-sheet print run",
   },
 ];
