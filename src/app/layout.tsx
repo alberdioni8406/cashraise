@@ -4,9 +4,9 @@ import Link from "next/link";
 import { CONTACT } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "CashRaise — Non-custodial BCH Fundraising",
+  title: "CashRaise — BCH ideas, news & non-custodial funding",
   description:
-    "List ideas. Pay a fee on-chain. Donations go straight to creators. No custody. Pure Bitcoin Cash fundamentals.",
+    "Read Bitcoin Cash news, explore project ideas, list campaigns. Pay a fee on-chain. Donations go straight to creators. No custody.",
 };
 
 export default function RootLayout({
@@ -18,16 +18,22 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased min-h-screen flex flex-col">
         <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
             <Link
               href="/"
-              className="text-xl font-bold tracking-tight text-white hover:no-underline"
+              className="text-xl font-bold tracking-tight text-white hover:no-underline shrink-0"
             >
               Cash<span className="text-emerald-400">Raise</span>
             </Link>
-            <nav className="flex gap-6 text-sm">
+            <nav className="flex flex-wrap justify-end gap-x-5 gap-y-1 text-sm">
               <Link href="/" className="text-zinc-400 hover:text-white">
-                Ideas
+                Campaigns
+              </Link>
+              <Link href="/news" className="text-zinc-400 hover:text-white">
+                News
+              </Link>
+              <Link href="/ideas" className="text-zinc-400 hover:text-white">
+                Idea sparks
               </Link>
               <Link href="/create" className="text-zinc-400 hover:text-white">
                 List an idea
@@ -43,8 +49,8 @@ export default function RootLayout({
         </main>
         <footer className="border-t border-zinc-800 py-6 text-center text-xs text-zinc-500 space-y-2">
           <p>
-            Non-custodial · Open source · Funded by BCH · Donations never touch
-            this platform
+            Non-custodial · News + ideas + funding · Donations never touch this
+            platform
           </p>
           <p>
             Contact:{" "}
