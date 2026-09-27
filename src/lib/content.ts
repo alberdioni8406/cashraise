@@ -18,58 +18,87 @@ export type IdeaSpark = {
   title: string;
   blurb: string;
   tags: string[];
+  /** Prefill for /create?title=... */
   seedTitle?: string;
 };
 
+/** Live X search shortcuts — focused on BCH culture, builders, and CashTokens */
 export const X_SEARCHES = [
   {
-    label: "Bitcoin Cash",
-    href: "https://x.com/search?q=Bitcoin%20Cash%20OR%20%23BCH&src=typed_query&f=live",
+    label: "BCH",
+    href: "https://x.com/search?q=BCH%20OR%20%24BCH&src=typed_query&f=live",
   },
   {
-    label: "#BCH",
-    href: "https://x.com/search?q=%23BCH&src=typed_query&f=live",
+    label: "#BitcoinCash",
+    href: "https://x.com/search?q=%23BitcoinCash%20OR%20%23BCH&src=typed_query&f=live",
   },
   {
-    label: "CashTokens",
-    href: "https://x.com/search?q=CashTokens%20OR%20%23CashTokens&src=typed_query&f=live",
+    label: "@BitcoinCashOG",
+    href: "https://x.com/BitcoinCashOG",
   },
   {
-    label: "eCash vs BCH",
-    href: "https://x.com/search?q=%22Bitcoin%20Cash%22%20(upgrade%20OR%20dev%20OR%20wallet)&src=typed_query&f=live",
+    label: "Paytaca",
+    href: "https://x.com/search?q=Paytaca%20OR%20%40Paytaca&src=typed_query&f=live",
+  },
+  {
+    label: "@TheBCHPodcast",
+    href: "https://x.com/TheBCHPodcast",
+  },
+  {
+    label: "CashTokens / DeFi",
+    href: "https://x.com/search?q=CashTokens%20OR%20%22BCH%20DeFi%22%20OR%20Cauldron&src=typed_query&f=live",
+  },
+  {
+    label: "@CauldronSwap",
+    href: "https://x.com/search?q=Cauldron%20OR%20CauldronSwap%20OR%20%40Cauldron&src=typed_query&f=live",
+  },
+  {
+    label: "BCH Guru",
+    href: "https://x.com/search?q=%22BCH%20Guru%22%20OR%20BCHGuru&src=typed_query&f=live",
   },
 ];
 
+/** Hand-picked entry points — BCH on its own terms */
 export const NEWS: NewsItem[] = [
   {
     id: "n1",
-    title: "Follow live BCH conversation on X",
+    title: "Live BCH signal on X",
     summary:
-      "Open the live search for Bitcoin Cash and #BCH. Pin what matters to your community and share campaign ideas that fit the moment.",
-    href: "https://x.com/search?q=Bitcoin%20Cash%20OR%20%23BCH&src=typed_query&f=live",
+      "Track $BCH, #BitcoinCash, and #BCH in real time. Follow builders, merchants, and podcasters shaping peer-to-peer cash — not side debates.",
+    href: "https://x.com/search?q=%24BCH%20OR%20%23BitcoinCash%20OR%20%23BCH&src=typed_query&f=live",
     source: "x",
-    tags: ["trending", "x"],
+    tags: ["BCH", "$BCH", "#BitcoinCash"],
   },
   {
     id: "n2",
-    title: "CashTokens ecosystem",
+    title: "Voices worth following",
     summary:
-      "Tokens on Bitcoin Cash power NFTs, stable assets, and app logic. Watch builders share demos and standards discussions.",
-    href: "https://x.com/search?q=CashTokens&src=typed_query&f=live",
+      "Start with @BitcoinCashOG and @TheBCHPodcast for culture, interviews, and network pulse. Add Paytaca when you care about wallets people actually use day to day.",
+    href: "https://x.com/BitcoinCashOG",
     source: "x",
-    tags: ["cashtokens", "dev"],
+    tags: ["@BitcoinCashOG", "@TheBCHPodcast", "Paytaca"],
   },
   {
     id: "n3",
-    title: "Bitcoin Cash node & network",
+    title: "CashTokens & BCH DeFi",
     summary:
-      "Stay current on upgrades, infrastructure, and merchant adoption threads from the BCH community.",
-    href: "https://x.com/search?q=%22Bitcoin%20Cash%22%20(node%20OR%20merchant%20OR%20adoption)&src=typed_query&f=live",
+      "Tokens, pools, and apps on Bitcoin Cash. Watch Cauldron-style swaps, BCH Guru takes, and #CashTokens demos — native capability, not a sidechain story.",
+    href: "https://x.com/search?q=CashTokens%20OR%20%22BCH%20DeFi%22%20OR%20Cauldron&src=typed_query&f=live",
     source: "x",
-    tags: ["network"],
+    tags: ["CashTokens", "BCH DeFi", "Cauldron"],
+  },
+  {
+    id: "n4",
+    title: "Build and fund on BCH",
+    summary:
+      "Ideas that need capital belong here: merchant tools, open demos, meetups, tip jars. List a campaign when the work is ready — fee on-chain, donations straight to you.",
+    href: "/ideas",
+    source: "official",
+    tags: ["campaigns", "builders"],
   },
 ];
 
+/** Idea sparks — users can turn these into campaigns */
 export const IDEA_SPARKS: IdeaSpark[] = [
   {
     id: "i1",
