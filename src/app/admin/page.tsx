@@ -18,6 +18,18 @@ interface Campaign {
   approvedAt?: string;
 }
 
+interface NewsNote {
+  id: string;
+  title: string;
+  summary: string;
+  excerpt?: string;
+  sourceName: string;
+  sourceUrl: string;
+  tags?: string[];
+  publishedAt: string;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const [secret, setSecret] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -33,6 +45,16 @@ export default function AdminPage() {
   const [editCategory, setEditCategory] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [notes, setNotes] = useState<NewsNote[]>([]);
+  const [newsReady, setNewsReady] = useState(false);
+  const [nTitle, setNTitle] = useState("");
+  const [nSummary, setNSummary] = useState("");
+  const [nExcerpt, setNExcerpt] = useState("");
+  const [nSourceName, setNSourceName] = useState("");
+  const [nSourceUrl, setNSourceUrl] = useState("");
+  const [nTags, setNTags] = useState("");
+  const [nDate, setNDate] = useState("");
+  const [publishing, setPublishing] = useState(false);
 
   const load = useCallback(async (s: string) => {
     setLoading(true);
@@ -49,6 +71,18 @@ export default function AdminPage() {
       const data = await res.json();
       setCampaigns(data.campaigns || []);
       setAuthed(true);
+      try {
+        const nr = await fetch("/api/admin/news", {
+          headers: { "x-admin-secret": s },
+        });
+        if (nr.ok) {
+          const nd = await nr.json();
+          setNotes(nd.notes || []);
+          setNewsReady(Boolean(nd.storageReady));
+        }
+      } catch {
+        /* news optional if route missing */
+      }
     } catch {
       setError("Network error");
     } finally {
@@ -139,6 +173,73 @@ export default function AdminPage() {
       setMsg("Network error");
     } finally {
       setSaving(false);
+    }
+  }
+
+
+  async function publishNote(e: React.FormEvent) {
+    e.preventDefault();
+    setPublishing(true);
+    setMsg("");
+    try {
+      const res = await fetch("/api/admin/news", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
+        body: JSON.stringify({
+          title: nTitle,
+          summary: nSummary,
+          excerpt: nExcerpt || undefined,
+          sourceName: nSourceName,
+          sourceUrl: nSourceUrl,
+          tags: nTags,
+          publishedAt: nDate || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg(data.error || "Publish failed");
+        return;
+      }
+      setMsg("Note published");
+      setNTitle("");
+      setNSummary("");
+      setNExcerpt("");
+      setNSourceName("");
+      setNSourceUrl("");
+      setNTags("");
+      setNDate("");
+      load(secret);
+    } catch {
+      setMsg("Network error");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function deleteNote(id: string) {
+    if (!confirm("Delete this note?")) return;
+    setMsg("");
+    try {
+      const res = await fetch("/api/admin/news", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
+        body: JSON.stringify({ id, action: "delete" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg(data.error || "Delete failed");
+        return;
+      }
+      setMsg("Note deleted");
+      load(secret);
+    } catch {
+      setMsg("Network error");
     }
   }
 
@@ -326,6 +427,105 @@ export default function AdminPage() {
           {msg}
         </p>
       )}
+
+      <section className="space-y-4 border border-zinc-800 rounded-xl p-5 bg-zinc-900/30">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">News desk</h2>
+          <span className="text-xs text-zinc-500">
+            {newsReady ? "Upstash ready" : "Set UPSTASH_REDIS_* for durable notes"}
+          </span>
+        </div>
+        <p className="text-xs text-zinc-500">
+          Publish a short note + link to the original. Appears on /news. Tips go to TIPS_ADDRESS, not listing fee.
+        </p>
+        <form onSubmit={publishNote} className="space-y-3">
+          <input
+            required
+            value={nTitle}
+            onChange={(e) => setNTitle(e.target.value)}
+            placeholder="Title"
+            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+          />
+          <textarea
+            required
+            rows={3}
+            value={nSummary}
+            onChange={(e) => setNSummary(e.target.value)}
+            placeholder="Your summary (your words — not a full copy of the article)"
+            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            value={nExcerpt}
+            onChange={(e) => setNExcerpt(e.target.value)}
+            placeholder="Optional short quote"
+            className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input
+              required
+              value={nSourceName}
+              onChange={(e) => setNSourceName(e.target.value)}
+              placeholder="Source name (e.g. site or author)"
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+            />
+            <input
+              required
+              value={nSourceUrl}
+              onChange={(e) => setNSourceUrl(e.target.value)}
+              placeholder="https://original-article-url"
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              value={nTags}
+              onChange={(e) => setNTags(e.target.value)}
+              placeholder="Tags (comma-separated)"
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+            />
+            <input
+              type="date"
+              value={nDate}
+              onChange={(e) => setNDate(e.target.value)}
+              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={publishing}
+            className="bg-emerald-500 text-black font-medium text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            {publishing ? "Publishing…" : "Publish note"}
+          </button>
+        </form>
+        <ul className="space-y-2 pt-2">
+          {notes.length === 0 ? (
+            <li className="text-sm text-zinc-500">No notes yet</li>
+          ) : (
+            notes.map((n) => (
+              <li
+                key={n.id}
+                className="flex flex-wrap items-start justify-between gap-2 text-sm border border-zinc-800 rounded-lg px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{n.title}</p>
+                  <p className="text-xs text-zinc-500">
+                    {n.publishedAt} · {n.sourceName}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => deleteNote(n.id)}
+                  className="text-xs text-red-400 shrink-0"
+                >
+                  Delete
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      </section>
+
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">
