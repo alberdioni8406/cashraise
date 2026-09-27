@@ -39,6 +39,18 @@ export default async function Home() {
             List an idea
           </Link>
           <Link
+            href="/news"
+            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
+          >
+            BCH News
+          </Link>
+          <Link
+            href="/ideas"
+            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
+          >
+            Idea sparks
+          </Link>
+          <Link
             href="/about"
             className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
           >
