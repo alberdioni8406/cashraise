@@ -1,16 +1,20 @@
 /**
- * Curated news + project idea sparks.
- * Edit this file (or later move to Upstash/admin) to refresh content.
+ * Curated BCH desk + idea sparks.
+ * Add news by editing NEWS below (title, your summary, link to original).
+ * Tips on /news go to TIPS_ADDRESS (site ops) — not campaign wallets.
  */
 
 export type NewsItem = {
   id: string;
   title: string;
+  /** Your short write-up — do not paste full third-party articles */
   summary: string;
-  href: string;
-  source: "x" | "web" | "official";
+  /** Optional short attributed quote */
+  excerpt?: string;
+  sourceName: string;
+  sourceUrl: string;
   tags?: string[];
-  publishedAt?: string;
+  publishedAt?: string; // YYYY-MM-DD
 };
 
 export type IdeaSpark = {
@@ -18,14 +22,13 @@ export type IdeaSpark = {
   title: string;
   blurb: string;
   tags: string[];
-  /** Prefill for /create?title=... */
   seedTitle?: string;
 };
 
-/** Live X search shortcuts — focused on BCH culture, builders, and CashTokens */
+/** Quick X follows / searches (secondary to curated desk) */
 export const X_SEARCHES = [
   {
-    label: "BCH",
+    label: "BCH · $BCH",
     href: "https://x.com/search?q=BCH%20OR%20%24BCH&src=typed_query&f=live",
   },
   {
@@ -38,66 +41,58 @@ export const X_SEARCHES = [
   },
   {
     label: "Paytaca",
-    href: "https://x.com/search?q=Paytaca%20OR%20%40Paytaca&src=typed_query&f=live",
+    href: "https://x.com/search?q=Paytaca&src=typed_query&f=live",
   },
   {
     label: "@TheBCHPodcast",
     href: "https://x.com/TheBCHPodcast",
   },
   {
-    label: "CashTokens / DeFi",
-    href: "https://x.com/search?q=CashTokens%20OR%20%22BCH%20DeFi%22%20OR%20Cauldron&src=typed_query&f=live",
-  },
-  {
-    label: "@CauldronSwap",
-    href: "https://x.com/search?q=Cauldron%20OR%20CauldronSwap%20OR%20%40Cauldron&src=typed_query&f=live",
-  },
-  {
-    label: "BCH Guru",
-    href: "https://x.com/search?q=%22BCH%20Guru%22%20OR%20BCHGuru&src=typed_query&f=live",
+    label: "CashTokens",
+    href: "https://x.com/search?q=CashTokens%20OR%20%22BCH%20DeFi%22&src=typed_query&f=live",
   },
 ];
 
-/** Hand-picked entry points — BCH on its own terms */
+/**
+ * Curated desk — add items you find relevant.
+ * summary = your words; sourceUrl = original; tips fund CashRaise ops.
+ */
 export const NEWS: NewsItem[] = [
   {
     id: "n1",
-    title: "Live BCH signal on X",
+    title: "How to use this desk",
     summary:
-      "Track $BCH, #BitcoinCash, and #BCH in real time. Follow builders, merchants, and podcasters shaping peer-to-peer cash — not side debates.",
-    href: "https://x.com/search?q=%24BCH%20OR%20%23BitcoinCash%20OR%20%23BCH&src=typed_query&f=live",
-    source: "x",
-    tags: ["BCH", "$BCH", "#BitcoinCash"],
+      "CashRaise publishes short, hand-picked notes on Bitcoin Cash: wallets, merchants, CashTokens, meetups, and tools. Each card links to the original source. Tips on this page support site operations only — campaign donations always go straight to creators.",
+    sourceName: "CashRaise",
+    sourceUrl: "/about",
+    tags: ["desk", "ops"],
+    publishedAt: "2026-09-27",
   },
   {
     id: "n2",
-    title: "Voices worth following",
+    title: "Follow the live BCH conversation",
     summary:
-      "Start with @BitcoinCashOG and @TheBCHPodcast for culture, interviews, and network pulse. Add Paytaca when you care about wallets people actually use day to day.",
-    href: "https://x.com/BitcoinCashOG",
-    source: "x",
-    tags: ["@BitcoinCashOG", "@TheBCHPodcast", "Paytaca"],
+      "For raw signal, track $BCH, #BitcoinCash, and voices like @BitcoinCashOG and @TheBCHPodcast. Use what you learn here to shape campaigns that solve real local problems — onboarding, pay links, meetups.",
+    sourceName: "X · BCH",
+    sourceUrl:
+      "https://x.com/search?q=%24BCH%20OR%20%23BitcoinCash&src=typed_query&f=live",
+    tags: ["BCH", "community"],
+    publishedAt: "2026-09-27",
   },
   {
     id: "n3",
-    title: "CashTokens & BCH DeFi",
+    title: "CashTokens in the wild",
     summary:
-      "Tokens, pools, and apps on Bitcoin Cash. Watch Cauldron-style swaps, BCH Guru takes, and #CashTokens demos — native capability, not a sidechain story.",
-    href: "https://x.com/search?q=CashTokens%20OR%20%22BCH%20DeFi%22%20OR%20Cauldron&src=typed_query&f=live",
-    source: "x",
-    tags: ["CashTokens", "BCH DeFi", "Cauldron"],
-  },
-  {
-    id: "n4",
-    title: "Build and fund on BCH",
-    summary:
-      "Ideas that need capital belong here: merchant tools, open demos, meetups, tip jars. List a campaign when the work is ready — fee on-chain, donations straight to you.",
-    href: "/ideas",
-    source: "official",
-    tags: ["campaigns", "builders"],
+      "Watch builders ship token demos, DeFi experiments, and loyalty ideas on Bitcoin Cash. When a tool is useful enough to fund, turn it into a campaign with a dedicated address and a clear goal.",
+    sourceName: "X · CashTokens",
+    sourceUrl:
+      "https://x.com/search?q=CashTokens%20OR%20Cauldron%20OR%20%22BCH%20DeFi%22&src=typed_query&f=live",
+    tags: ["CashTokens", "DeFi", "builders"],
+    publishedAt: "2026-09-27",
   },
 ];
-/** Idea sparks — real-world BCH campaigns people actually fund */
+
+/** Real-world BCH campaigns people actually fund */
 export const IDEA_SPARKS: IdeaSpark[] = [
   {
     id: "i1",
