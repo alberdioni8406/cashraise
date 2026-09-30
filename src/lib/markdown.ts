@@ -1,6 +1,5 @@
 /**
  * Minimal safe markdown → HTML (no external deps).
- * Supports: **bold**, *italic*, `code`, [links](url), headings, lists, paragraphs, line breaks.
  */
 
 export function escapeHtml(s: string): string {
@@ -19,28 +18,18 @@ export function renderMarkdown(src: string): string {
   let inOl = false;
 
   const closeLists = () => {
-    if (inUl) {
-      out.push("</ul>");
-      inUl = false;
-    }
-    if (inOl) {
-      out.push("</ol>");
-      inOl = false;
-    }
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
   };
 
   const inline = (text: string): string => {
     let t = escapeHtml(text);
-    // links [text](url) — only http(s)
     t = t.replace(
       /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-emerald-400 underline">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[var(--orange)] underline">$1</a>'
     );
-    // bold **text**
     t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    // italic *text*
     t = t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>");
-    // inline code
     t = t.replace(
       /`([^`]+)`/g,
       '<code class="bg-zinc-800 px-1 rounded text-sm">$1</code>'
@@ -50,43 +39,28 @@ export function renderMarkdown(src: string): string {
 
   for (const raw of lines) {
     const line = raw.trimEnd();
-    if (!line.trim()) {
-      closeLists();
-      continue;
-    }
+    if (!line.trim()) { closeLists(); continue; }
 
     const h = line.match(/^(#{1,3})\s+(.+)$/);
     if (h) {
       closeLists();
       const level = h[1].length;
-      out.push(`<h${level} class="font-semibold mt-4 mb-2 text-white">${inline(h[2])}</h${level}>`);
+      out.push(`<h\( {level} class="font-semibold mt-4 mb-2 text-white"> \){inline(h[2])}</h${level}>`);
       continue;
     }
 
     const ul = line.match(/^[-*]\s+(.+)$/);
     if (ul) {
-      if (inOl) {
-        out.push("</ol>");
-        inOl = false;
-      }
-      if (!inUl) {
-        out.push('<ul class="list-disc list-inside space-y-1 my-2">');
-        inUl = true;
-      }
+      if (inOl) { out.push("</ol>"); inOl = false; }
+      if (!inUl) { out.push('<ul class="list-disc list-inside space-y-1 my-2">'); inUl = true; }
       out.push(`<li>${inline(ul[1])}</li>`);
       continue;
     }
 
     const ol = line.match(/^\d+\.\s+(.+)$/);
     if (ol) {
-      if (inUl) {
-        out.push("</ul>");
-        inUl = false;
-      }
-      if (!inOl) {
-        out.push('<ol class="list-decimal list-inside space-y-1 my-2">');
-        inOl = true;
-      }
+      if (inUl) { out.push("</ul>"); inUl = false; }
+      if (!inOl) { out.push('<ol class="list-decimal list-inside space-y-1 my-2">'); inOl = true; }
       out.push(`<li>${inline(ol[1])}</li>`);
       continue;
     }
