@@ -36,6 +36,6 @@ export const ADMIN_SECRET = process.env.ADMIN_SECRET || "cashraise-admin-change-
 
 export const CONTACT = {
   x: "alberdioni8406_",
-  email: "alberdioni8406@gmail.com",
+  email: "alberdioni8406@proton.me",
   telegram: "alberdioni8406",
 };
