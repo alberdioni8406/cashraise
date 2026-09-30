@@ -38,12 +38,15 @@ export default async function CampaignPage({
 
   return (
     <article className="max-w-2xl mx-auto space-y-8">
-      <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">
-        ← All ideas
+      <Link
+        href="/#open-ideas"
+        className="cr-meta text-[var(--muted)] hover:text-white hover:no-underline inline-flex items-center gap-1"
+      >
+        ← Back to ideas
       </Link>
 
       {campaign.imageUrl && (
-        <div className="rounded-xl overflow-hidden border border-zinc-800 aspect-video bg-zinc-900">
+        <div className="rounded-[var(--radius)] overflow-hidden border border-[var(--border)] aspect-video bg-[var(--surface)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={campaign.imageUrl}
@@ -54,13 +57,22 @@ export default async function CampaignPage({
       )}
 
       <header className="space-y-3">
-        {campaign.category && (
-          <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
-            {campaign.category}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--orange)]">
+            <span className="status-dot" aria-hidden />
+            Open
           </span>
-        )}
-        <h1 className="text-3xl sm:text-4xl font-bold">{campaign.title}</h1>
-        <p className="text-zinc-500 text-sm">
+          <span className="cr-meta">BCH fundraising</span>
+          {campaign.category && (
+            <span className="cr-meta border border-[var(--border)] px-2 py-0.5 rounded-[var(--radius)]">
+              {campaign.category}
+            </span>
+          )}
+        </div>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+          {campaign.title}
+        </h1>
+        <p className="cr-meta">
           Listed {new Date(campaign.createdAt).toLocaleString()}
           {campaign.feeTxid && campaign.feeTxid !== "seed" && (
             <>
@@ -69,7 +81,6 @@ export default async function CampaignPage({
                 href={`https://bchexplorer.cash/tx/${campaign.feeTxid}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline"
               >
                 fee tx
               </a>
@@ -78,44 +89,43 @@ export default async function CampaignPage({
         </p>
       </header>
 
-      <div className="border border-zinc-800 bg-zinc-900/60 rounded-xl p-5 space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-2">
+      <div className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-5 sm:p-6 space-y-4">
+        <p className="cr-meta text-[var(--orange)]">On-chain raised</p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide">
-              Raised on-chain
+            <p className="font-display text-3xl sm:text-4xl font-bold text-[var(--orange)] tracking-tight">
+              {raisedSats != null ? formatBch(raised) : "—"}{" "}
+              <span className="text-lg text-[var(--muted)]">BCH</span>
             </p>
-            <p className="text-2xl font-bold text-emerald-400">
-              {raisedSats != null ? `${formatBch(raised)} BCH` : "—"}
-            </p>
+            <p className="cr-meta mt-1">Raised on campaign address</p>
           </div>
           <div className="text-right">
             {hasGoal ? (
               <>
-                <p className="text-xs text-zinc-500 uppercase tracking-wide">
-                  Goal
-                </p>
-                <p className="text-lg font-semibold text-zinc-200">
+                <p className="font-mono text-lg text-white">
                   {formatBch(goal!)} BCH
                 </p>
+                <p className="cr-meta">Target</p>
               </>
             ) : (
-              <p className="text-sm text-zinc-500">Open-ended</p>
+              <p className="cr-meta">Open-ended</p>
             )}
           </div>
         </div>
 
         {hasGoal && (
           <div className="space-y-1.5">
-            <div className="h-2.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  met ? "bg-emerald-400" : "bg-emerald-500"
-                }`}
-                style={{ width: `${pct ?? 0}%` }}
-              />
+            <div
+              className={`cr-progress ${met ? "met" : ""}`}
+              role="progressbar"
+              aria-valuenow={pct ?? 0}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <span style={{ width: `${pct ?? 0}%` }} />
             </div>
-            <div className="flex justify-between text-xs text-zinc-500">
-              <span>{met ? "Goal reached" : `${pct}% of goal`}</span>
+            <div className="flex justify-between cr-meta">
+              <span>{met ? "Goal reached" : `${pct}% funded`}</span>
               {raisedSats != null && goal! > raised && (
                 <span>{formatBch(goal! - raised)} BCH to go</span>
               )}
@@ -123,27 +133,27 @@ export default async function CampaignPage({
           </div>
         )}
 
-        <p className="text-xs text-zinc-500 leading-relaxed">
-          Counts <strong className="text-zinc-400">all</strong> funds ever
-          received on this address (explorer total). Creators should use a{" "}
-          <strong className="text-zinc-300">dedicated campaign address</strong>{" "}
-          and avoid sharing it for other payments while the campaign is live.
+        <p className="text-xs text-[var(--muted-dim)] leading-relaxed">
+          Counts all funds received on this address. Creators should use a{" "}
+          <strong className="text-[var(--muted)]">dedicated campaign address</strong>.
         </p>
       </div>
 
       <div
-        className="text-zinc-300 max-w-none"
+        className="cr-prose max-w-none"
         dangerouslySetInnerHTML={{ __html: bodyHtml }}
       />
 
-      <div className="border border-emerald-500/40 bg-emerald-950/10 rounded-2xl p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-emerald-400">
-          Donate directly
-        </h2>
-        <p className="text-sm text-zinc-400">
-          Scan or copy. Funds go <strong>straight</strong> to the creator.
-          This platform never touches the money.
-        </p>
+      <div className="border border-[var(--orange)]/40 bg-[var(--orange-glow)] rounded-[var(--radius)] p-5 sm:p-6 space-y-5">
+        <div>
+          <h2 className="font-display text-xl font-bold text-[var(--orange)]">
+            Support with BCH
+          </h2>
+          <p className="text-sm text-[var(--muted)] mt-1">
+            Scan or copy. Funds go <strong className="text-white">straight</strong>{" "}
+            to the creator. CashRaise never touches the money.
+          </p>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-6 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -152,25 +162,32 @@ export default async function CampaignPage({
             alt="Donation QR"
             width={200}
             height={200}
-            className="rounded-lg bg-white p-2 shrink-0"
+            className="rounded-[var(--radius)] bg-white p-2 shrink-0"
           />
-          <div className="space-y-3 text-sm break-all">
+          <div className="space-y-3 text-sm w-full min-w-0">
             <div>
-              <span className="text-zinc-500 block mb-1">Address</span>
-              <code className="text-emerald-300 text-xs sm:text-sm">
+              <span className="cr-meta block mb-1">Creator address</span>
+              <code className="font-mono text-xs sm:text-sm text-[var(--orange)] break-all">
                 {campaign.creatorAddress}
               </code>
             </div>
-            <a
-              href={uri}
-              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-medium px-4 py-2 rounded-lg transition"
-            >
-              Open in wallet
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a href={uri} className="btn btn-primary">
+                Support with BCH
+              </a>
+              <a
+                href={`https://bchexplorer.cash/address/${encodeURIComponent(campaign.creatorAddress)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-ghost"
+              >
+                View on explorer
+              </a>
+            </div>
           </div>
         </div>
 
-        <p className="text-xs text-zinc-600">
+        <p className="text-[11px] text-[var(--muted-dim)]">
           Always verify the address. Self-custody means you are responsible for
           the transaction.
         </p>
