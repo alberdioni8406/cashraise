@@ -44,7 +44,7 @@ export default function IdeasPage() {
                 </div>
                 <Link
                   href={href}
-                  className="text-sm font-medium text-[var(--orange)] hover:text-[var(--orange)]"
+                  className="text-sm font-medium text-[var(--accent)] hover:text-[var(--accent)]"
                 >
                   Use this idea →
                 </Link>
