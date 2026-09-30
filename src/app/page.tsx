@@ -5,7 +5,7 @@ import { LISTING_FEE_SATS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-function formatBch(sats: number, digits = 2): string {
+function formatBch(sats: number, digits = 4): string {
   return (sats / 1e8).toFixed(digits);
 }
 
@@ -20,57 +20,51 @@ export default async function Home() {
   );
 
   return (
-    <div className="space-y-10">
-      <section className="text-center space-y-4 py-8">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-          Ideas. Funded peer-to-peer.
+    <div className="space-y-12">
+      <section className="pt-4 sm:pt-8 pb-2">
+        <p className="cr-meta text-[var(--orange)] mb-3">CashRaise · BCH</p>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] max-w-2xl">
+          Ideas.
+          <br />
+          Funded
+          <br />
+          <span className="text-[var(--orange)]">peer-to-peer.</span>
         </h1>
-        <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
-          A non-custodial BCH fundraising board. Pay an on-chain fee to list.
-          Donations go <strong className="text-emerald-400">straight</strong> to
-          the creator&apos;s address. No accounts. No custody. You only sponsor
-          what you see fit.
+        <p className="mt-5 text-[var(--muted)] max-w-xl text-base sm:text-lg leading-relaxed">
+          A non-custodial Bitcoin Cash fundraising board. List an idea. Let
+          people discover it. Support it directly with BCH — funds never touch
+          this platform.
         </p>
-        <div className="flex justify-center gap-4 pt-4 flex-wrap">
-          <Link
-            href="/create"
-            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-3 rounded-lg transition"
-          >
-            List an idea
+        <div className="flex flex-wrap gap-3 mt-7">
+          <Link href="/create" className="btn btn-primary">
+            + List an idea
           </Link>
-          <Link
-            href="/news"
-            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
-          >
-            BCH News
-          </Link>
-          <Link
-            href="/ideas"
-            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
-          >
-            Idea sparks
-          </Link>
-          <Link
-            href="/about"
-            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-6 py-3 rounded-lg transition"
-          >
-            Why this exists
-          </Link>
+          <a href="#open-ideas" className="btn btn-secondary">
+            Explore ideas
+          </a>
         </div>
       </section>
 
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Open ideas</h2>
-          <span className="text-xs text-zinc-500">
-            Listing fee: {LISTING_FEE_SATS.toLocaleString()} sats
+      <section id="open-ideas">
+        <div className="flex items-end justify-between gap-4 mb-5 border-b border-[var(--border)] pb-3">
+          <div>
+            <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight">
+              Open ideas
+            </h2>
+            <p className="cr-meta mt-1">Funding board</p>
+          </div>
+          <span className="cr-meta text-right">
+            Listing fee · {LISTING_FEE_SATS.toLocaleString()} sats
           </span>
         </div>
 
         {campaigns.length === 0 ? (
-          <p className="text-zinc-500 text-center py-16">
-            No approved campaigns yet. Be the first to list an idea.
-          </p>
+          <div className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-10 text-center space-y-3">
+            <p className="text-[var(--muted)]">No approved campaigns yet.</p>
+            <Link href="/create" className="btn btn-primary">
+              + Be the first
+            </Link>
+          </div>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2">
             {campaigns.map((c) => {
@@ -81,63 +75,87 @@ export default async function Home() {
                 hasGoal && raised != null
                   ? Math.min(100, Math.round((raised / goal!) * 1000) / 10)
                   : null;
+              const met = hasGoal && raised != null && raised >= goal!;
 
               return (
                 <li key={c.id}>
                   <Link
                     href={`/campaign/${c.id}`}
-                    className="block h-full border border-zinc-800 bg-zinc-900/50 hover:border-emerald-500/40 hover:bg-zinc-900 rounded-xl overflow-hidden transition group"
+                    className="cr-card block h-full overflow-hidden hover:no-underline group"
                   >
                     {c.imageUrl && (
-                      <div className="aspect-video bg-zinc-800 overflow-hidden">
+                      <div className="aspect-[16/9] bg-[var(--bg-elevated)] overflow-hidden border-b border-[var(--border)]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={c.imageUrl}
                           alt=""
-                          className="w-full h-full object-cover group-hover:scale-105 transition"
+                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
                         />
                       </div>
                     )}
-                    <div className="p-5">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-lg group-hover:text-emerald-400 transition">
-                          {c.title}
-                        </h3>
-                        {c.category && (
-                          <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded shrink-0">
-                            {c.category}
-                          </span>
-                        )}
+                    <div className="p-4 sm:p-5 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--orange)]">
+                          <span className="status-dot" aria-hidden />
+                          Open
+                        </span>
+                        <span className="cr-meta">BCH · Funding</span>
                       </div>
-                      <p className="text-zinc-400 text-sm mt-2 line-clamp-3">
-                        {c.description}
+
+                      <h3 className="font-display text-lg sm:text-xl font-semibold text-white leading-snug group-hover:text-[var(--orange)] transition-colors">
+                        {c.title}
+                      </h3>
+
+                      {c.category && (
+                        <span className="inline-block cr-meta border border-[var(--border)] px-2 py-0.5 rounded-[var(--radius)]">
+                          {c.category}
+                        </span>
+                      )}
+
+                      <p className="text-sm text-[var(--muted)] line-clamp-3 leading-relaxed">
+                        {c.description.replace(/[#*_`\[\]]/g, "").slice(0, 180)}
+                        {c.description.length > 180 ? "…" : ""}
                       </p>
 
-                      <div className="mt-4 space-y-1.5">
-                        <div className="flex justify-between text-xs text-zinc-500">
-                          <span>
+                      <div className="pt-1 space-y-1.5">
+                        <div className="flex justify-between font-mono text-xs">
+                          <span className="text-[var(--orange)]">
                             {raised != null
-                              ? `${formatBch(raised)} BCH raised`
-                              : "Raised —"}
+                              ? `${formatBch(raised)} BCH`
+                              : "— BCH"}{" "}
+                            <span className="text-[var(--muted-dim)]">raised</span>
                           </span>
-                          <span>
+                          <span className="text-[var(--muted)]">
                             {hasGoal
-                              ? `Goal ${formatBch(goal!)} BCH`
+                              ? `${formatBch(goal!)} BCH goal`
                               : "Open-ended"}
                           </span>
                         </div>
                         {hasGoal && (
-                          <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-emerald-500"
-                              style={{ width: `${pct ?? 0}%` }}
-                            />
+                          <div
+                            className={`cr-progress ${met ? "met" : ""}`}
+                            role="progressbar"
+                            aria-valuenow={pct ?? 0}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                          >
+                            <span style={{ width: `${pct ?? 0}%` }} />
                           </div>
+                        )}
+                        {hasGoal && pct != null && (
+                          <p className="cr-meta">
+                            {met ? "Goal reached" : `${pct}% funded`}
+                          </p>
                         )}
                       </div>
 
-                      <div className="mt-3 text-xs text-zinc-600">
-                        {new Date(c.createdAt).toLocaleDateString()}
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="cr-meta">
+                          {new Date(c.createdAt).toLocaleDateString()}
+                        </span>
+                        <span className="text-xs font-semibold text-[var(--orange)] group-hover:underline">
+                          View idea →
+                        </span>
                       </div>
                     </div>
                   </Link>
