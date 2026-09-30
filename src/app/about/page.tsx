@@ -10,7 +10,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-12">
       <header className="space-y-4 pt-2">
-        <p className="cr-meta text-[var(--orange)]">Manifesto</p>
+        <p className="cr-meta text-[var(--accent)]">Manifesto</p>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           Why CashRaise exists
         </h1>
@@ -64,7 +64,7 @@ export default function AboutPage() {
             key={p.t}
             className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-4"
           >
-            <h3 className="cr-meta text-[var(--orange)] mb-2">{p.t}</h3>
+            <h3 className="cr-meta text-[var(--accent)] mb-2">{p.t}</h3>
             <p className="text-sm text-[var(--muted)] leading-relaxed">{p.d}</p>
           </div>
         ))}
@@ -82,13 +82,17 @@ export default function AboutPage() {
       </section>
 
       <section className="border border-[var(--border)] rounded-[var(--radius)] p-5 space-y-3">
-        <h2 className="cr-meta text-[var(--orange)]">Contact</h2>
+        <h2 className="cr-meta text-[var(--accent)]">Contact</h2>
         <p className="text-sm text-[var(--muted)]">
           Manual approval or questions after the listing fee:
         </p>
         <ul className="text-sm text-[var(--muted)] space-y-1 font-mono">
           <li>
-            <a href={`https://x.com/${CONTACT.x}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`https://x.com/${CONTACT.x}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               @{CONTACT.x}
             </a>
           </li>
@@ -96,7 +100,11 @@ export default function AboutPage() {
             <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
           </li>
           <li>
-            <a href={`https://t.me/${CONTACT.telegram}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`https://t.me/${CONTACT.telegram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               t.me/{CONTACT.telegram}
             </a>
           </li>
