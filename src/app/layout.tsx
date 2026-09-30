@@ -43,6 +43,7 @@ export default function RootLayout({
               CASH<span className="text-[var(--accent)]">RAISE</span>
             </Link>
             <nav className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              {/* Ideas = live campaigns board (home) — visible on all viewports */}
               <Link
                 href="/#open-ideas"
                 className="text-[var(--muted)] hover:text-white px-2 py-1 hover:no-underline"
@@ -86,7 +87,14 @@ export default function RootLayout({
             <div className="trust-grid">
               <div className="trust-block">
                 <h3>Non-custodial</h3>
-                <p>Donations never touch CashRaise.</p>
+                <p>
+                  No middleman. No platform custody.
+                  <br />
+                  BCH goes directly to the fundraiser.
+                </p>
+                <p className="mt-1.5 text-[11px] text-[var(--muted-dim)]">
+                  Donations never touch this platform.
+                </p>
               </div>
               <div className="trust-block">
                 <h3>Open source</h3>
