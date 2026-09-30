@@ -22,13 +22,15 @@ export default async function Home() {
   return (
     <div className="space-y-12">
       <section className="pt-4 sm:pt-8 pb-2">
-        <p className="cr-meta text-[var(--orange)] mb-3">CashRaise · BCH</p>
+        <p className="cr-meta text-[var(--accent)] mb-3">
+          CashRaise · <span className="bch-mark">BCH</span>
+        </p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] max-w-2xl">
           Ideas.
           <br />
           Funded
           <br />
-          <span className="text-[var(--orange)]">peer-to-peer.</span>
+          <span className="text-[var(--accent)]">peer-to-peer.</span>
         </h1>
         <p className="mt-5 text-[var(--muted)] max-w-xl text-base sm:text-lg leading-relaxed">
           A non-custodial Bitcoin Cash fundraising board. List an idea. Let
@@ -95,14 +97,16 @@ export default async function Home() {
                     )}
                     <div className="p-4 sm:p-5 space-y-3">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--orange)]">
+                        <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--accent)]">
                           <span className="status-dot" aria-hidden />
                           Open
                         </span>
-                        <span className="cr-meta">BCH · Funding</span>
+                        <span className="cr-meta">
+                          <span className="bch-mark">BCH</span> · Funding
+                        </span>
                       </div>
 
-                      <h3 className="font-display text-lg sm:text-xl font-semibold text-white leading-snug group-hover:text-[var(--orange)] transition-colors">
+                      <h3 className="font-display text-lg sm:text-xl font-semibold text-white leading-snug group-hover:text-[var(--accent)] transition-colors">
                         {c.title}
                       </h3>
 
@@ -119,11 +123,13 @@ export default async function Home() {
 
                       <div className="pt-1 space-y-1.5">
                         <div className="flex justify-between font-mono text-xs">
-                          <span className="text-[var(--orange)]">
+                          <span className="text-[var(--accent)]">
                             {raised != null
                               ? `${formatBch(raised)} BCH`
                               : "— BCH"}{" "}
-                            <span className="text-[var(--muted-dim)]">raised</span>
+                            <span className="text-[var(--muted-dim)]">
+                              raised
+                            </span>
                           </span>
                           <span className="text-[var(--muted)]">
                             {hasGoal
@@ -153,7 +159,7 @@ export default async function Home() {
                         <span className="cr-meta">
                           {new Date(c.createdAt).toLocaleDateString()}
                         </span>
-                        <span className="text-xs font-semibold text-[var(--orange)] group-hover:underline">
+                        <span className="text-xs font-semibold text-[var(--accent)] group-hover:underline">
                           View idea →
                         </span>
                       </div>
