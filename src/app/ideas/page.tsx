@@ -44,7 +44,7 @@ export default function IdeasPage() {
                 </div>
                 <Link
                   href={href}
-                  className="text-sm font-medium text-emerald-400 hover:text-emerald-300"
+                  className="text-sm font-medium text-[var(--orange)] hover:text-[var(--orange)]"
                 >
                   Use this idea →
                 </Link>
@@ -56,10 +56,7 @@ export default function IdeasPage() {
 
       <div className="border border-zinc-800 rounded-xl p-5 text-sm text-zinc-400 text-center space-y-2">
         <p>Have your own idea?</p>
-        <Link
-          href="/create"
-          className="inline-block bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-5 py-2 rounded-lg transition"
-        >
+        <Link href="/create" className="inline-block btn btn-primary">
           List an idea
         </Link>
       </div>
