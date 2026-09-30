@@ -58,7 +58,7 @@ export default async function CampaignPage({
 
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--orange)]">
+          <span className="inline-flex items-center gap-1.5 cr-meta text-[var(--accent)]">
             <span className="status-dot" aria-hidden />
             Open
           </span>
@@ -90,10 +90,10 @@ export default async function CampaignPage({
       </header>
 
       <div className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-5 sm:p-6 space-y-4">
-        <p className="cr-meta text-[var(--orange)]">On-chain raised</p>
+        <p className="cr-meta text-[var(--accent)]">On-chain raised</p>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="font-display text-3xl sm:text-4xl font-bold text-[var(--orange)] tracking-tight">
+            <p className="font-display text-3xl sm:text-4xl font-bold text-[var(--accent)] tracking-tight">
               {raisedSats != null ? formatBch(raised) : "—"}{" "}
               <span className="text-lg text-[var(--muted)]">BCH</span>
             </p>
@@ -135,7 +135,10 @@ export default async function CampaignPage({
 
         <p className="text-xs text-[var(--muted-dim)] leading-relaxed">
           Counts all funds received on this address. Creators should use a{" "}
-          <strong className="text-[var(--muted)]">dedicated campaign address</strong>.
+          <strong className="text-[var(--muted)]">
+            dedicated campaign address
+          </strong>
+          .
         </p>
       </div>
 
@@ -144,14 +147,15 @@ export default async function CampaignPage({
         dangerouslySetInnerHTML={{ __html: bodyHtml }}
       />
 
-      <div className="border border-[var(--orange)]/40 bg-[var(--orange-glow)] rounded-[var(--radius)] p-5 sm:p-6 space-y-5">
+      <div className="border border-[var(--accent)]/40 bg-[var(--accent-muted)] rounded-[var(--radius)] p-5 sm:p-6 space-y-5">
         <div>
-          <h2 className="font-display text-xl font-bold text-[var(--orange)]">
+          <h2 className="font-display text-xl font-bold text-[var(--accent)]">
             Support with BCH
           </h2>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Scan or copy. Funds go <strong className="text-white">straight</strong>{" "}
-            to the creator. CashRaise never touches the money.
+            Scan or copy. Funds go{" "}
+            <strong className="text-white">straight</strong> to the creator.
+            CashRaise never touches the money.
           </p>
         </div>
 
@@ -167,7 +171,7 @@ export default async function CampaignPage({
           <div className="space-y-3 text-sm w-full min-w-0">
             <div>
               <span className="cr-meta block mb-1">Creator address</span>
-              <code className="font-mono text-xs sm:text-sm text-[var(--orange)] break-all">
+              <code className="font-mono text-xs sm:text-sm text-[var(--accent)] break-all">
                 {campaign.creatorAddress}
               </code>
             </div>
