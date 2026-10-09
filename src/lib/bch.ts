@@ -23,7 +23,7 @@ export function isValidCashAddr(addr: string): boolean {
 
 export async function getTransaction(txid: string): Promise<any | null> {
   try {
-    const res = await fetch(`\( {EXPLORER}/tx/ \){txid}`, {
+    const res = await fetch(`${EXPLORER}/tx/${txid}`, {
       cache: "no-store",
     });
     if (!res.ok) return null;
@@ -79,27 +79,73 @@ export async function verifyListingFee(txid: string): Promise<{
   };
 }
 
+/** Normalize explorer amount to satoshis */
+function toSats(n: number): number {
+  if (!Number.isFinite(n) || n < 0) return 0;
+  // Values > 1 are treated as sats; 0–1 treated as BCH (edge case for tiny amounts)
+  return n > 1 ? Math.round(n) : Math.round(n * 1e8);
+}
+
 /**
- * Total received (funded) for a campaign address in satoshis.
+ * Total ever received on a campaign address (satoshis).
+ * Prefers totalReceived over current balance so spending does not
+ * zero out the raised counter.
+ *
+ * Multiple public explorers are tried because a single provider can
+ * fail from serverless hosts or return incomplete stats.
  */
 export async function getAddressReceivedSats(
   address: string
 ): Promise<number | null> {
+  if (!address || !isValidCashAddr(address)) return null;
+
+  const results: number[] = [];
+
+  // 1) bch.actorforth.org — reliable totalReceivedSat
   try {
     const res = await fetch(
-      `\( {EXPLORER}/address/ \){encodeURIComponent(address)}`,
-      { cache: "no-store" }
+      `https://rest.bch.actorforth.org/v2/address/details/${encodeURIComponent(address)}`,
+      { cache: "no-store", headers: { Accept: "application/json" } }
     );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const funded =
-      data?.chain_stats?.funded_txo_sum ?? data?.totalReceived ?? null;
-    if (funded == null) return null;
-    const n = Number(funded);
-    return n > 1 ? n : Math.round(n * 1e8);
+    if (res.ok) {
+      const data = await res.json();
+      const n = Number(
+        data?.totalReceivedSat ?? data?.totalReceived ?? data?.balanceSat
+      );
+      if (Number.isFinite(n) && n >= 0) {
+        results.push(
+          data?.totalReceivedSat != null
+            ? Math.round(Number(data.totalReceivedSat))
+            : toSats(n)
+        );
+      }
+    }
   } catch {
-    return null;
+    /* try next */
   }
+
+  // 2) bchexplorer.cash (Esplora-style) — chain_stats.funded_txo_sum
+  try {
+    const res = await fetch(
+      `${EXPLORER}/address/${encodeURIComponent(address)}`,
+      { cache: "no-store", headers: { Accept: "application/json" } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const funded = data?.chain_stats?.funded_txo_sum;
+      if (funded != null && Number.isFinite(Number(funded))) {
+        results.push(toSats(Number(funded)));
+      }
+    }
+  } catch {
+    /* try next */
+  }
+
+  if (results.length === 0) return null;
+
+  // Prefer the highest totalReceived-style figure (under-reporting explorers
+  // occasionally omit older outputs).
+  return Math.max(...results);
 }
 
 export function buildPaymentUri(
@@ -120,5 +166,5 @@ export function buildPaymentUri(
 }
 
 export function qrImageUrl(data: string, size = 220): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=\( {size}x \){size}&data=${encodeURIComponent(data)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
 }
