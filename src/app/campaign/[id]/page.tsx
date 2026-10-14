@@ -1,13 +1,71 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getCampaign } from "@/lib/store";
 import { buildPaymentUri, qrImageUrl, getAddressReceivedSats } from "@/lib/bch";
 import { renderMarkdown } from "@/lib/markdown";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 function formatBch(sats: number): string {
   return (sats / 1e8).toFixed(4);
+}
+
+/** Social preview when sharing a campaign link */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const campaign = await getCampaign(id);
+
+  if (!campaign || campaign.status !== "approved") {
+    return { title: "Campaign not found" };
+  }
+
+  const plain = campaign.description
+    .replace(/[#*_`\[\]]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+
+  const description =
+    plain ||
+    `Support this idea with BCH on ${SITE_NAME}. Funds go straight to the creator.`;
+
+  const pageUrl = `\( {SITE_URL}/campaign/ \){campaign.id}`;
+
+  const images = campaign.imageUrl
+    ? [
+        {
+          url: `\( {SITE_URL}/api/campaign-image/ \){campaign.id}`,
+          width: 1200,
+          height: 630,
+          alt: campaign.title,
+        },
+      ]
+    : undefined;
+
+  return {
+    title: campaign.title,
+    description,
+    openGraph: {
+      type: "website",
+      url: pageUrl,
+      siteName: SITE_NAME,
+      title: campaign.title,
+      description,
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: campaign.title,
+      description,
+      images: images?.map((i) => i.url),
+    },
+  };
 }
 
 export default async function CampaignPage({
@@ -135,10 +193,7 @@ export default async function CampaignPage({
 
         <p className="text-xs text-[var(--muted-dim)] leading-relaxed">
           Counts all funds received on this address. Creators should use a{" "}
-          <strong className="text-[var(--muted)]">
-            dedicated campaign address
-          </strong>
-          .
+          <strong className="text-[var(--muted)]">dedicated campaign address</strong>.
         </p>
       </div>
 
@@ -153,9 +208,8 @@ export default async function CampaignPage({
             Support with BCH
           </h2>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Scan or copy. Funds go{" "}
-            <strong className="text-white">straight</strong> to the creator.
-            CashRaise never touches the money.
+            Scan or copy. Funds go <strong className="text-white">straight</strong>{" "}
+            to the creator. CashRaise never touches the money.
           </p>
         </div>
 
