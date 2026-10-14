@@ -2,12 +2,30 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { CONTACT } from "@/lib/types";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "CashRaise — Ideas. Funded peer-to-peer.",
-  description:
-    "Non-custodial Bitcoin Cash fundraising board. List an idea. Donations go straight to creators. No custody.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 /** Prevent FOUC: apply stored theme before paint */
@@ -43,7 +61,6 @@ export default function RootLayout({
               CASH<span className="text-[var(--accent)]">RAISE</span>
             </Link>
             <nav className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-              {/* Ideas = live campaigns board (home) — visible on all viewports */}
               <Link
                 href="/#open-ideas"
                 className="text-[var(--muted)] hover:text-white px-2 py-1 hover:no-underline"
