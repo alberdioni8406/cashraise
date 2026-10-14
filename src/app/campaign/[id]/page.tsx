@@ -33,37 +33,38 @@ export async function generateMetadata({
 
   const description =
     plain ||
-    `Support this idea with BCH on ${SITE_NAME}. Funds go straight to the creator.`;
+    "Support this idea with BCH on CashRaise. Funds go straight to the creator.";
 
-  const pageUrl = `\( {SITE_URL}/campaign/ \){campaign.id}`;
-
-  const images = campaign.imageUrl
-    ? [
-        {
-          url: `\( {SITE_URL}/api/campaign-image/ \){campaign.id}`,
-          width: 1200,
-          height: 630,
-          alt: campaign.title,
-        },
-      ]
-    : undefined;
+  const pageUrl = SITE_URL + "/campaign/" + campaign.id;
+  const coverUrl = campaign.imageUrl
+    ? SITE_URL + "/api/campaign-image/" + campaign.id
+    : SITE_URL + "/opengraph-image";
 
   return {
     title: campaign.title,
     description,
+    alternates: { canonical: pageUrl },
     openGraph: {
       type: "website",
       url: pageUrl,
       siteName: SITE_NAME,
       title: campaign.title,
       description,
-      images,
+      images: [
+        {
+          url: coverUrl,
+          secureUrl: coverUrl,
+          width: 1200,
+          height: 630,
+          alt: campaign.title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: campaign.title,
       description,
-      images: images?.map((i) => i.url),
+      images: [coverUrl],
     },
   };
 }
@@ -147,6 +148,7 @@ export default async function CampaignPage({
         </p>
       </header>
 
+      {/* Funding panel */}
       <div className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-5 sm:p-6 space-y-4">
         <p className="cr-meta text-[var(--accent)]">On-chain raised</p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -197,11 +199,13 @@ export default async function CampaignPage({
         </p>
       </div>
 
+      {/* Long-form body */}
       <div
         className="cr-prose max-w-none"
         dangerouslySetInnerHTML={{ __html: bodyHtml }}
       />
 
+      {/* Support panel */}
       <div className="border border-[var(--accent)]/40 bg-[var(--accent-muted)] rounded-[var(--radius)] p-5 sm:p-6 space-y-5">
         <div>
           <h2 className="font-display text-xl font-bold text-[var(--accent)]">
