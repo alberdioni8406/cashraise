@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const alt = "CashRaise — Ideas. Funded peer-to-peer.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -25,7 +24,6 @@ export default function OpenGraphImage() {
           overflow: "hidden",
         }}
       >
-        {/* subtle grid */}
         <div
           style={{
             position: "absolute",
@@ -35,7 +33,6 @@ export default function OpenGraphImage() {
             backgroundSize: "48px 48px",
           }}
         />
-        {/* accent bar */}
         <div
           style={{
             position: "absolute",
