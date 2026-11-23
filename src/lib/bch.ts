@@ -23,7 +23,7 @@ export function isValidCashAddr(addr: string): boolean {
 
 export async function getTransaction(txid: string): Promise<any | null> {
   try {
-    const res = await fetch(`${EXPLORER}/tx/${txid}`, {
+    const res = await fetch(`\( {EXPLORER}/tx/ \){txid}`, {
       cache: "no-store",
     });
     if (!res.ok) return null;
@@ -82,7 +82,6 @@ export async function verifyListingFee(txid: string): Promise<{
 /** Normalize explorer amount to satoshis */
 function toSats(n: number): number {
   if (!Number.isFinite(n) || n < 0) return 0;
-  // Values > 1 are treated as sats; 0–1 treated as BCH (edge case for tiny amounts)
   return n > 1 ? Math.round(n) : Math.round(n * 1e8);
 }
 
@@ -90,9 +89,6 @@ function toSats(n: number): number {
  * Total ever received on a campaign address (satoshis).
  * Prefers totalReceived over current balance so spending does not
  * zero out the raised counter.
- *
- * Multiple public explorers are tried because a single provider can
- * fail from serverless hosts or return incomplete stats.
  */
 export async function getAddressReceivedSats(
   address: string
@@ -101,7 +97,6 @@ export async function getAddressReceivedSats(
 
   const results: number[] = [];
 
-  // 1) bch.actorforth.org — reliable totalReceivedSat
   try {
     const res = await fetch(
       `https://rest.bch.actorforth.org/v2/address/details/${encodeURIComponent(address)}`,
@@ -124,10 +119,9 @@ export async function getAddressReceivedSats(
     /* try next */
   }
 
-  // 2) bchexplorer.cash (Esplora-style) — chain_stats.funded_txo_sum
   try {
     const res = await fetch(
-      `${EXPLORER}/address/${encodeURIComponent(address)}`,
+      `\( {EXPLORER}/address/ \){encodeURIComponent(address)}`,
       { cache: "no-store", headers: { Accept: "application/json" } }
     );
     if (res.ok) {
@@ -142,9 +136,6 @@ export async function getAddressReceivedSats(
   }
 
   if (results.length === 0) return null;
-
-  // Prefer the highest totalReceived-style figure (under-reporting explorers
-  // occasionally omit older outputs).
   return Math.max(...results);
 }
 
@@ -166,5 +157,62 @@ export function buildPaymentUri(
 }
 
 export function qrImageUrl(data: string, size = 220): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=\( {size}x \){size}&data=${encodeURIComponent(data)}`;
+}
+
+/**
+ * Verify that a transaction sent BCH to a campaign creator address.
+ * Used for donor wall comments — proof of support without accounts.
+ */
+export async function verifyDonationToAddress(
+  txid: string,
+  creatorAddress: string
+): Promise<{ valid: boolean; amountSats?: number; error?: string }> {
+  if (!txid || !/^[a-fA-F0-9]{64}$/.test(txid.trim())) {
+    return { valid: false, error: "Invalid txid format" };
+  }
+  if (!isValidCashAddr(creatorAddress)) {
+    return { valid: false, error: "Invalid campaign address" };
+  }
+
+  const tx = await getTransaction(txid.trim().toLowerCase());
+  if (!tx) {
+    return {
+      valid: false,
+      error:
+        "Transaction not found (or explorer unavailable). Wait a few minutes and try again.",
+    };
+  }
+
+  const target = creatorAddress.toLowerCase().replace("bitcoincash:", "");
+  let paid = 0;
+
+  for (const vout of tx.vout || []) {
+    const addr = (
+      vout.scriptpubkey_address ||
+      vout.scriptPubKey?.addresses?.[0] ||
+      vout.scriptPubKey?.address ||
+      ""
+    )
+      .toString()
+      .toLowerCase();
+    const clean = addr.replace("bitcoincash:", "");
+    if (clean === target || addr === creatorAddress.toLowerCase()) {
+      const val = Number(vout.value ?? vout.valueSat ?? 0);
+      paid += val > 1 ? Math.round(val) : Math.round(val * 1e8);
+    }
+  }
+
+  if (paid >= 546) {
+    return { valid: true, amountSats: paid };
+  }
+
+  return {
+    valid: false,
+    amountSats: paid,
+    error:
+      paid > 0
+        ? `Only ${paid} sats to this campaign address (need a real donation output).`
+        : "No BCH sent to this campaign address in that transaction.",
+  };
 }
