@@ -2,6 +2,9 @@
  * Minimal safe markdown → HTML (no external deps).
  * Supports: **bold**, *italic*, `code`, [links](url), headings, lists,
  * paragraphs, GFM tables, blockquotes (callout boxes), horizontal rules.
+ *
+ * NOTE: Uses string concatenation only (no ${} template literals) so
+ * pasting into GitHub cannot strip interpolations.
  */
 
 export function escapeHtml(s: string): string {
@@ -13,7 +16,7 @@ export function escapeHtml(s: string): string {
 }
 
 function inline(text: string): string {
-  let t = escapeHtml(text);
+  var t = escapeHtml(text);
   t = t.replace(
     /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[var(--accent)] underline">$1</a>'
@@ -28,32 +31,38 @@ function inline(text: string): string {
 }
 
 function splitCells(line: string): string[] {
-  let s = line.trim();
+  var s = line.trim();
   if (s.startsWith("|")) s = s.slice(1);
   if (s.endsWith("|")) s = s.slice(0, -1);
-  return s.split("|").map((c) => c.trim());
+  return s.split("|").map(function (c) {
+    return c.trim();
+  });
 }
 
 function isTableSeparator(line: string): boolean {
-  const cells = splitCells(line);
+  var cells = splitCells(line);
   if (cells.length < 2) return false;
-  return cells.every((c) => /^:?-{3,}:?$/.test(c));
+  return cells.every(function (c) {
+    return /^:?-{3,}:?$/.test(c);
+  });
 }
 
 function isTableRow(line: string): boolean {
-  const t = line.trim();
+  var t = line.trim();
   if (!t.includes("|")) return false;
   if (isTableSeparator(t)) return true;
   return (
-    t.split("|").filter((c) => c.trim().length > 0).length >= 1 &&
+    t.split("|").filter(function (c) {
+      return c.trim().length > 0;
+    }).length >= 1 &&
     (t.startsWith("|") || t.includes("|"))
   );
 }
 
-function alignmentFromSeparator(sep: string): ("left" | "center" | "right")[] {
-  return splitCells(sep).map((c) => {
-    const left = c.startsWith(":");
-    const right = c.endsWith(":");
+function alignmentFromSeparator(sep: string): Array<"left" | "center" | "right"> {
+  return splitCells(sep).map(function (c) {
+    var left = c.startsWith(":");
+    var right = c.endsWith(":");
     if (left && right) return "center";
     if (right) return "right";
     return "left";
@@ -62,63 +71,67 @@ function alignmentFromSeparator(sep: string): ("left" | "center" | "right")[] {
 
 function renderTable(rows: string[]): string {
   if (rows.length < 2) return "";
-  const headerCells = splitCells(rows[0]);
-  let bodyStart = 1;
-  let aligns: ("left" | "center" | "right")[] = headerCells.map(() => "left");
+  var headerCells = splitCells(rows[0]);
+  var bodyStart = 1;
+  var aligns: Array<"left" | "center" | "right"> = headerCells.map(function () {
+    return "left";
+  });
 
   if (rows.length >= 2 && isTableSeparator(rows[1])) {
     aligns = alignmentFromSeparator(rows[1]);
     bodyStart = 2;
   }
 
-  const alignStyle = (i: number) => {
-    const a = aligns[i] || "left";
-    return a === "left" ? "" : ` style="text-align:${a}"`;
-  };
+  function alignStyle(i: number): string {
+    var a = aligns[i] || "left";
+    if (a === "left") return "";
+    return ' style="text-align:' + a + '"';
+  }
 
-  const thead =
-    "<thead><tr>" +
-    headerCells
-      .map((c, i) => `<th\( {alignStyle(i)}> \){inline(c)}</th>`)
-      .join("") +
-    "</tr></thead>";
+  var thead = "<thead><tr>";
+  for (var hi = 0; hi < headerCells.length; hi++) {
+    thead += "<th" + alignStyle(hi) + ">" + inline(headerCells[hi]) + "</th>";
+  }
+  thead += "</tr></thead>";
 
-  const bodyRows = rows.slice(bodyStart).filter((r) => !isTableSeparator(r));
-  const tbody =
-    bodyRows.length === 0
-      ? ""
-      : "<tbody>" +
-        bodyRows
-          .map((row) => {
-            const cells = splitCells(row);
-            while (cells.length < headerCells.length) cells.push("");
-            return (
-              "<tr>" +
-              headerCells
-                .map(
-                  (_, i) =>
-                    `<td\( {alignStyle(i)}> \){inline(cells[i] || "")}</td>`
-                )
-                .join("") +
-              "</tr>"
-            );
-          })
-          .join("") +
-        "</tbody>";
+  var bodyRows = rows.slice(bodyStart).filter(function (r) {
+    return !isTableSeparator(r);
+  });
 
-  return `<div class="cr-table-wrap"><table class="cr-table">\( {thead} \){tbody}</table></div>`;
+  var tbody = "";
+  if (bodyRows.length > 0) {
+    tbody = "<tbody>";
+    for (var ri = 0; ri < bodyRows.length; ri++) {
+      var cells = splitCells(bodyRows[ri]);
+      while (cells.length < headerCells.length) cells.push("");
+      tbody += "<tr>";
+      for (var ci = 0; ci < headerCells.length; ci++) {
+        tbody +=
+          "<td" + alignStyle(ci) + ">" + inline(cells[ci] || "") + "</td>";
+      }
+      tbody += "</tr>";
+    }
+    tbody += "</tbody>";
+  }
+
+  return (
+    '<div class="cr-table-wrap"><table class="cr-table">' +
+    thead +
+    tbody +
+    "</table></div>"
+  );
 }
 
 export function renderMarkdown(src: string): string {
   if (!src) return "";
-  const lines = src.replace(/\r\n/g, "\n").split("\n");
-  const out: string[] = [];
-  let inUl = false;
-  let inOl = false;
-  let inBq = false;
-  let i = 0;
+  var lines = src.replace(/\r\n/g, "\n").split("\n");
+  var out: string[] = [];
+  var inUl = false;
+  var inOl = false;
+  var inBq = false;
+  var i = 0;
 
-  const closeLists = () => {
+  function closeLists() {
     if (inUl) {
       out.push("</ul>");
       inUl = false;
@@ -127,22 +140,22 @@ export function renderMarkdown(src: string): string {
       out.push("</ol>");
       inOl = false;
     }
-  };
+  }
 
-  const closeBq = () => {
+  function closeBq() {
     if (inBq) {
       out.push("</blockquote>");
       inBq = false;
     }
-  };
+  }
 
-  const closeAll = () => {
+  function closeAll() {
     closeLists();
     closeBq();
-  };
+  }
 
   while (i < lines.length) {
-    const line = lines[i].trimEnd();
+    var line = lines[i].trimEnd();
 
     if (!line.trim()) {
       closeAll();
@@ -150,13 +163,14 @@ export function renderMarkdown(src: string): string {
       continue;
     }
 
+    // GFM tables
     if (
       isTableRow(line) &&
       i + 1 < lines.length &&
       isTableRow(lines[i + 1].trimEnd())
     ) {
       closeAll();
-      const tableLines: string[] = [];
+      var tableLines: string[] = [];
       while (i < lines.length && isTableRow(lines[i].trimEnd())) {
         tableLines.push(lines[i].trimEnd());
         i++;
@@ -165,12 +179,13 @@ export function renderMarkdown(src: string): string {
         out.push(renderTable(tableLines));
       } else {
         out.push(
-          `<p class="my-2 leading-relaxed">${inline(tableLines[0])}</p>`
+          '<p class="my-2 leading-relaxed">' + inline(tableLines[0]) + "</p>"
         );
       }
       continue;
     }
 
+    // horizontal rule
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
       closeAll();
       out.push('<hr class="cr-hr" />');
@@ -178,18 +193,26 @@ export function renderMarkdown(src: string): string {
       continue;
     }
 
-    const h = line.match(/^(#{1,3})\s+(.+)$/);
+    // headings ## ###
+    var h = line.match(/^(#{1,3})\s+(.+)$/);
     if (h) {
       closeAll();
-      const level = h[1].length;
+      var level = h[1].length;
       out.push(
-        `<h\( {level} class="font-semibold mt-4 mb-2 text-white"> \){inline(h[2])}</h${level}>`
+        "<h" +
+          level +
+          ' class="font-semibold mt-4 mb-2 text-white">' +
+          inline(h[2]) +
+          "</h" +
+          level +
+          ">"
       );
       i++;
       continue;
     }
 
-    const bq = line.match(/^>\s?(.*)$/);
+    // blockquote callout
+    var bq = line.match(/^>\s?(.*)$/);
     if (bq) {
       closeLists();
       if (!inBq) {
@@ -197,13 +220,14 @@ export function renderMarkdown(src: string): string {
         inBq = true;
       }
       if (bq[1].trim()) {
-        out.push(`<p>${inline(bq[1])}</p>`);
+        out.push("<p>" + inline(bq[1]) + "</p>");
       }
       i++;
       continue;
     }
 
-    const ul = line.match(/^[-*]\s+(.+)$/);
+    // unordered list
+    var ul = line.match(/^[-*]\s+(.+)$/);
     if (ul) {
       closeBq();
       if (inOl) {
@@ -214,12 +238,13 @@ export function renderMarkdown(src: string): string {
         out.push('<ul class="list-disc list-inside space-y-1 my-2">');
         inUl = true;
       }
-      out.push(`<li>${inline(ul[1])}</li>`);
+      out.push("<li>" + inline(ul[1]) + "</li>");
       i++;
       continue;
     }
 
-    const ol = line.match(/^\d+\.\s+(.+)$/);
+    // ordered list
+    var ol = line.match(/^\d+\.\s+(.+)$/);
     if (ol) {
       closeBq();
       if (inUl) {
@@ -230,13 +255,13 @@ export function renderMarkdown(src: string): string {
         out.push('<ol class="list-decimal list-inside space-y-1 my-2">');
         inOl = true;
       }
-      out.push(`<li>${inline(ol[1])}</li>`);
+      out.push("<li>" + inline(ol[1]) + "</li>");
       i++;
       continue;
     }
 
     closeAll();
-    out.push(`<p class="my-2 leading-relaxed">${inline(line)}</p>`);
+    out.push('<p class="my-2 leading-relaxed">' + inline(line) + "</p>");
     i++;
   }
 
