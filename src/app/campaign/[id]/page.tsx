@@ -5,6 +5,7 @@ import { buildPaymentUri, qrImageUrl, getAddressReceivedSats } from "@/lib/bch";
 import { renderMarkdown } from "@/lib/markdown";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import Link from "next/link";
+import { DonorWall } from "@/components/DonorWall";
 
 export const dynamic = "force-dynamic";
 
@@ -148,7 +149,6 @@ export default async function CampaignPage({
         </p>
       </header>
 
-      {/* Funding panel */}
       <div className="border border-[var(--border)] bg-[var(--surface)] rounded-[var(--radius)] p-5 sm:p-6 space-y-4">
         <p className="cr-meta text-[var(--accent)]">On-chain raised</p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -199,13 +199,11 @@ export default async function CampaignPage({
         </p>
       </div>
 
-      {/* Long-form body */}
       <div
         className="cr-prose max-w-none"
         dangerouslySetInnerHTML={{ __html: bodyHtml }}
       />
 
-      {/* Support panel */}
       <div className="border border-[var(--accent)]/40 bg-[var(--accent-muted)] rounded-[var(--radius)] p-5 sm:p-6 space-y-5">
         <div>
           <h2 className="font-display text-xl font-bold text-[var(--accent)]">
@@ -254,6 +252,8 @@ export default async function CampaignPage({
           the transaction.
         </p>
       </div>
+
+      <DonorWall campaignId={campaign.id} />
     </article>
   );
 }
