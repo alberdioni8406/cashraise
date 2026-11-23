@@ -221,3 +221,52 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .theme-toggle button:focus-visible {
   outline: 2px solid var(--accent); outline-offset: -2px;
 }
+/* Markdown tables & callouts */
+.cr-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.cr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: #d4d4d8;
+}
+.cr-table th,
+.cr-table td {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.cr-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #fafafa;
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+.cr-table tr:last-child td {
+  border-bottom: none;
+}
+.cr-table strong {
+  color: #fafafa;
+}
+.cr-callout {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-muted);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: #d4d4d8;
+}
+.cr-callout p {
+  margin: 0.35rem 0;
+}
+.cr-hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0;
+}
